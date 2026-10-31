@@ -38,6 +38,11 @@ async def test_diagnostics_describe_the_setup(
     result = await async_get_config_entry_diagnostics(hass, loaded_entry)
 
     assert result["bluetooth"] == {"connectable_scanners": 1, "mesh_connected": True}
+    assert result["connection"] == {
+        "ping_failures": 0,
+        "last_ping_failure": None,
+        "recent_events": [],
+    }
     assert result["cache"]["cloud_used_at_start"] is False
     assert result["cache"]["last_fetched"] is not None
     assert len(result["devices"]) == 11
