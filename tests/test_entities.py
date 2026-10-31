@@ -161,12 +161,11 @@ async def test_motion_sensor(
     entity_id = get_entity_id(hass, "binary_sensor", MOTION)
     device = get_device(loaded_entry, MOTION)
     assert hass.states.get(entity_id).state == "off"
-    assert "battery" not in hass.states.get(entity_id).attributes
+    assert "bright" not in hass.states.get(entity_id).attributes
 
-    push_state(device, motion=True, battery=80, bright=True)
+    push_state(device, motion=True, bright=True)
     state = hass.states.get(entity_id)
     assert state.state == "on"
-    assert state.attributes["battery"] == 80
     assert state.attributes["bright"] is True
 
     push_state(device, motion=None)

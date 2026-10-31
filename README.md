@@ -17,7 +17,7 @@ In Home Assistant en HACS heet deze integratie **Plejd BLE (revised)**. De toevo
 >
 > **Testversie.** Het is getest met geautomatiseerde tests, maar nog niet op echte Plejd-apparaten. Zie [Kwaliteit](#kwaliteit).
 
-*English summary: Home Assistant integration for Plejd lighting over Bluetooth, built on pyplejd. It creates only lights, switches, button events and motion sensors, plus one refresh button and one optional diagnostic sensor that is off by default. There are no diagnostic entities per device. Unofficial, and tested with automated tests only so far, not yet on real hardware. It is a different integration than hass-plejd and the two cannot run at the same time.*
+*English summary: Home Assistant integration for Plejd lighting over Bluetooth, built on pyplejd. It creates only lights, switches, button events and motion sensors, plus a few diagnostic entities: a refresh button, a Bluetooth connection sensor and a battery level for motion sensors. Per-device signal and last-seen sensors exist but are off by default. Unofficial, and tested with automated tests only so far, not yet on real hardware. It is a different integration than hass-plejd and the two cannot run at the same time.*
 
 ## Is dit iets voor jou?
 
@@ -25,7 +25,7 @@ Er bestaat al een bekende Plejd-integratie: [hass-plejd](https://github.com/thom
 
 Plejd BLE is voor jou als je vooral lampen, dimmers, relais, knoppen en bewegingssensoren hebt en een opgeruimde lijst met entiteiten wilt.
 
-Een voorbeeld, gemeten door de maker op één installatie met 27 apparaten: hass-plejd maakte daar 191 entiteiten aan. Daarvan waren er 74 lampen, knoppen en bewegingssensoren. De overige 117 waren diagnose- of configuratie-entiteiten, zoals signaalsterkte en "laatst gezien". Plejd BLE maakt die per apparaat niet aan. Er komen alleen een verversknop en een diagnosesensor bij, en die sensor staat standaard uit. Hoeveel entiteiten het op echte apparaten worden, meten we pas bij de eerste test op hardware.
+Een voorbeeld, gemeten door de maker op één installatie met 27 apparaten: hass-plejd maakte daar 191 entiteiten aan. Daarvan waren er 74 lampen, knoppen en bewegingssensoren. De overige 117 waren diagnose- of configuratie-entiteiten, zoals signaalsterkte en "laatst gezien". Plejd BLE zet die per apparaat niet aan. Standaard zijn er een verversknop, een verbindingssensor en het batterijniveau van bewegingssensoren bij. Laatst gezien en signaalsterkte per apparaat bestaan wel, maar staan uit totdat je ze nodig hebt. Op die site kwam Plejd BLE op 74 entiteiten voor de apparaten zelf; hoeveel het er in totaal worden, meten we bij de eerste test op hardware.
 
 Ze kunnen **niet tegelijk** actief zijn, want een Plejd-apparaat houdt maar één Bluetooth-verbinding tegelijk vast.
 
@@ -63,19 +63,26 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 | Lamp of dimmer | `light`, met helderheid en, als de lamp het kan, kleurtemperatuur |
 | Relais | `switch` |
 | Knop op een paneel | `event` per knop, met `press` en `release` |
-| Bewegingssensor | `binary_sensor`, met batterij en lichtniveau als extra gegevens |
+| Bewegingssensor | `binary_sensor`, met het lichtniveau als extra gegeven |
 | Apparatenlijst verversen | `button`, haalt de lijst opnieuw uit de Plejd-cloud |
+| Verbinding met het mesh | `binary_sensor`, diagnostisch. Laat ook zien via welk apparaat je verbonden bent (`connected_via`) |
+| Batterijniveau | `sensor` bij bewegingssensoren, diagnostisch. De ruwe waarde van het apparaat, geen percentage |
 | Laatste cloud-synchronisatie | `sensor`, diagnostisch en standaard uit |
+| Laatst gezien en signaalsterkte | `sensor`, twee per apparaat op netstroom, diagnostisch en standaard uit |
 
 Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het de productnaam van Plejd, bijvoorbeeld "Wireless push button". Van een model waarvan we de productnaam niet kennen, blijft het modelnummer over. Dezelfde naam in dezelfde kamer wordt genummerd. De kamer zet Home Assistant zelf voor de entiteit-ID, bijvoorbeeld `light.slaapkamer_1_plafondlicht`.
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
+
+De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bluetooth-melding van een apparaat op netstroom. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Na de hardwaretest kijken we of er een percentage van te maken is.
 
 ## Problemen oplossen
 
 **Alles is "niet beschikbaar".** Er is geen Bluetooth-verbinding met je Plejd-mesh. Controleer of de adapter of proxy binnen bereik is van een Plejd-apparaat dat op netstroom werkt. Heb je maar één zo'n apparaat, dan kan Home Assistant volgens de README van hass-plejd niet tegelijk met de Plejd-app of een GWY-01 verbinden.
 
 **Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het proberen met de knop **Apparatenlijst verversen**.
+
+**Waarlangs ben ik verbonden?** Kijk bij de verbindingssensor: die toont de naam van het apparaat waarlangs Home Assistant op dat moment met het mesh verbonden is. Staat die sensor op uit, dan is er geen verbinding. Zie ook de lijst met apparaten en tijdstippen in de diagnostische gegevens.
 
 **De inlog wordt geweigerd.** Home Assistant vraagt dan zelf om opnieuw in te loggen. Je kunt de inlog ook wijzigen via de drie puntjes bij de integratie, onder **Opnieuw configureren**.
 
@@ -98,6 +105,7 @@ Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat 
 - Alleen Bluetooth. Er is geen terugval via de Plejd-cloud: de cloud wordt niet gebruikt om lampen te bedienen.
 - De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt. We weten niet of Plejd dat officieel ondersteunt.
 - Niet tegelijk met hass-plejd.
+- Er is geen beschikbaarheid per apparaat. Valt de verbinding met het mesh weg, dan worden alle entiteiten tegelijk niet beschikbaar. Wie dan precies niet bereikbaar is, zie je aan de sensoren voor laatst gezien.
 - Alles is gebouwd op pyplejd, dat door één persoon wordt onderhouden. We gebruiken één vaste versie en een test controleert of die nog past.
 - Nog niet getest op echte apparaten.
 
