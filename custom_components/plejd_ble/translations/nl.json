@@ -46,11 +46,59 @@
       "reconfigure_successful": "Inlog bijgewerkt."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bluetooth-ingangen",
+        "description": "Home Assistant maakt verbinding met je Plejd-apparaten via een van de apparaten die op netstroom werken. Kies welke daarvoor gebruikt mogen worden. Haal een apparaat weg als het Bluetooth-signaal zwak of onstabiel is.",
+        "data": {
+          "allowed_devices": "Toegestane apparaten"
+        }
+      }
+    },
+    "error": {
+      "no_gateway": "Kies minstens één apparaat."
+    },
+    "abort": {
+      "not_loaded": "Plejd BLE draait nu niet. Probeer het opnieuw als de integratie gestart is.",
+      "no_gateways": "Er zijn geen apparaten op netstroom gevonden."
+    }
+  },
   "entity": {
+    "button": {
+      "refresh_cloud": {
+        "name": "Apparatenlijst verversen"
+      }
+    },
     "event": {
       "button": {
         "name": "Knop {number}"
       }
+    },
+    "sensor": {
+      "last_cloud_sync": {
+        "name": "Laatste cloud-synchronisatie"
+      },
+      "battery_level": {
+        "name": "Batterijniveau"
+      },
+      "last_seen": {
+        "name": "Laatst gezien"
+      },
+      "signal_strength": {
+        "name": "Signaalsterkte"
+      }
+    },
+    "binary_sensor": {
+      "mesh_connected": {
+        "name": "Bluetooth-verbinding met mesh"
+      }
+    }
+  },
+  "issues": {
+    "cloud_unreachable": {
+      "title": "Plejd-cloud niet bereikbaar",
+      "description": "De apparatenlijst kon al meer dan zeven dagen niet worden ververst vanuit de Plejd-cloud. Plejd BLE blijft werken met de bewaarde lijst. Nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is."
     }
   },
   "exceptions": {

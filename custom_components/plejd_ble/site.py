@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections import deque
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime
 import inspect
 import logging
@@ -22,7 +25,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import device_registry as dr, issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
@@ -31,6 +34,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     CACHE_STORE_VERSION,
     CLOUD_CACHE_MAX_AGE,
+    CONF_BLOCKED_DEVICES,
     CONF_SITE_ID,
     DOMAIN,
     MANUFACTURER,
@@ -41,6 +45,14 @@ from .naming import NameSource, build_names
 _LOGGER = logging.getLogger(__name__)
 
 type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
+
+
+@dataclass(frozen=True)
+class SignalReading:
+    """Het laatst gemeten signaal van een Plejd-apparaat."""
+
+    rssi: int
+    seen_at: datetime
 
 
 def cache_store(hass: HomeAssistant, entry_id: str) -> Store[dict[str, Any]]:
@@ -96,13 +108,21 @@ class PlejdSite:
             password=entry.data[CONF_PASSWORD],
             siteId=entry.data[CONF_SITE_ID],
         )
+        self.manager.blacklist = entry.options.get(CONF_BLOCKED_DEVICES, [])
         self.devices: list[Any] = []
         self.names: dict[str, str] = {}
         self.cache_fetched_at: datetime | None = None
         self.used_cloud = False
         self.started = False
+        # Per Bluetooth-adres wat we zelf het laatst hebben gemeten. We gebruiken
+        # niet het rssi-veld van pyplejd, want dat bewaart de sterkste waarde ooit.
+        self.signal: dict[str, SignalReading] = {}
+        self.connection_events: deque[tuple[datetime, bool]] = deque(maxlen=20)
+        self.ping_failures = 0
+        self.last_ping_failure: datetime | None = None
         self._stopping = False
         self._unsubs: list[CALLBACK_TYPE] = []
+        self._connection_listeners: list[Callable[[], None]] = []
 
     async def async_load(self) -> None:
         """Laad de sitegegevens: uit de cache als die vers is, anders uit de cloud."""
@@ -114,8 +134,12 @@ class PlejdSite:
                 cached.get("fetched_at") or ""
             )
 
+        refresh_requested = isinstance(cached, dict) and bool(
+            cached.get("refresh_requested")
+        )
         use_cache = (
             data is not None
+            and not refresh_requested
             and self.cache_fetched_at is not None
             and dt_util.utcnow() - self.cache_fetched_at < CLOUD_CACHE_MAX_AGE
         )
@@ -140,6 +164,27 @@ class PlejdSite:
             )
 
         self._build_devices()
+        self._update_cloud_issue()
+
+    @callback
+    def _update_cloud_issue(self) -> None:
+        """Meld het als de apparatenlijst al lang niet meer is ververst."""
+        issue_id = f"cloud_unreachable_{self.entry.entry_id}"
+        fresh = (
+            self.cache_fetched_at is not None
+            and dt_util.utcnow() - self.cache_fetched_at < CLOUD_CACHE_MAX_AGE
+        )
+        if fresh:
+            ir.async_delete_issue(self.hass, DOMAIN, issue_id)
+        else:
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                issue_id,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="cloud_unreachable",
+            )
 
     def _build_devices(self) -> None:
         """Bepaal welke apparaten we gebruiken en hoe ze heten."""
@@ -216,6 +261,80 @@ class PlejdSite:
             created[identifier] = registry.async_get_or_create(
                 config_entry_id=self.entry.entry_id, **info, **extra
             )
+
+    def hub_device_info(self) -> DeviceInfo:
+        """Beschrijf het apparaat voor de site zelf, met de knop en de sensor."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.entry.entry_id)},
+            name="Plejd BLE",
+            manufacturer=MANUFACTURER,
+            entry_type=dr.DeviceEntryType.SERVICE,
+        )
+
+    def powered_units(self) -> dict[str, Any]:
+        """Geef per apparaat op netstroom één apparaat, met het Bluetooth-adres als sleutel.
+
+        Een fysiek apparaat kan meerdere uitgangen hebben. Dan kiezen we het
+        hoofdapparaat om het te vertegenwoordigen.
+        """
+        units: dict[str, Any] = {}
+        for device in self.devices:
+            if not device.outputType or not device.powered:
+                continue
+            is_primary = device.parent_identifier == device.device_identifier
+            if device.BLEaddress in units and not is_primary:
+                continue
+            units[device.BLEaddress] = device
+        return units
+
+    def gateway_candidates(self) -> dict[str, str]:
+        """Geef de apparaten op netstroom die als Bluetooth-ingang kunnen dienen.
+
+        De sleutel is het Bluetooth-adres zoals pyplejd het gebruikt, de waarde
+        een leesbare naam.
+        """
+        candidates: dict[str, str] = {}
+        for address, device in self.powered_units().items():
+            name = self.names[device.device_identifier]
+            candidates[address] = f"{name} ({device.room})" if device.room else name
+        return candidates
+
+    def connected_via(self) -> str | None:
+        """Geef de naam van het apparaat waarlangs we nu verbonden zijn.
+
+        pyplejd zet is_gateway aan op dat apparaat zodra de verbinding er is, en
+        weer uit als die wegvalt.
+        """
+        candidates = self.gateway_candidates()
+        for address, device in self.powered_units().items():
+            if device.hw and device.hw.is_gateway:
+                return candidates[address]
+        return None
+
+    @callback
+    def async_add_connection_listener(
+        self, listener: Callable[[], None]
+    ) -> Callable[[], None]:
+        """Laat weten als de Bluetooth-verbinding aan of uit gaat."""
+        self._connection_listeners.append(listener)
+
+        @callback
+        def remove() -> None:
+            self._connection_listeners.remove(listener)
+
+        return remove
+
+    async def async_apply_options(self) -> None:
+        """Pas de gekozen Bluetooth-ingangen toe, zonder opnieuw te laden."""
+        blocked = self.entry.options.get(CONF_BLOCKED_DEVICES, [])
+        await self.manager.set_blacklist(blocked)
+
+    async def async_request_refresh(self) -> None:
+        """Haal de apparatenlijst opnieuw uit de cloud, met de oude als terugval."""
+        cached = await self._store.async_load()
+        if isinstance(cached, dict) and isinstance(cached.get("data"), dict):
+            await self._store.async_save({**cached, "refresh_requested": True})
+        self.hass.config_entries.async_schedule_reload(self.entry.entry_id)
 
     async def async_start(self) -> None:
         """Begin met Bluetooth: ontdek het mesh en houd de verbinding open."""
@@ -295,7 +414,10 @@ class PlejdSite:
         *,
         connect: bool = True,
     ) -> None:
-        """Geef een gevonden Plejd-apparaat door aan pyplejd."""
+        """Geef een gevonden Plejd-apparaat door aan pyplejd en onthoud het signaal."""
+        self.signal[service_info.device.address.upper()] = SignalReading(
+            service_info.rssi, dt_util.utcnow()
+        )
         is_new = self.manager.add_mesh_device(service_info.device, service_info.rssi)
         if connect and is_new and not self._stopping:
             self.entry.async_create_background_task(
@@ -303,7 +425,10 @@ class PlejdSite:
             )
 
     def _connection_monitor(self, connected: bool) -> None:
-        """Probeer opnieuw te verbinden als de verbinding wegvalt."""
+        """Onthoud verbindingswijzigingen en probeer opnieuw te verbinden bij uitval."""
+        self.connection_events.append((dt_util.utcnow(), connected))
+        for listener in list(self._connection_listeners):
+            listener()
         if self._stopping or connected:
             return
         self.entry.async_create_background_task(
@@ -315,6 +440,8 @@ class PlejdSite:
         if self._stopping or not self.started:
             return
         if not await self.manager.ping():
+            self.ping_failures += 1
+            self.last_ping_failure = dt_util.utcnow()
             _LOGGER.debug("Ping naar het Plejd-mesh mislukt")
 
     async def _async_broadcast_time(self, *_: Any) -> None:

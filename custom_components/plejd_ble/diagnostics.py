@@ -28,6 +28,7 @@ async def async_get_config_entry_diagnostics(
     devices = []
     for device in site.devices:
         hardware = device.hw
+        reading = site.signal.get(device.ble_mac.upper())
         devices.append(
             {
                 "model": device.hardware,
@@ -37,8 +38,9 @@ async def async_get_config_entry_diagnostics(
                 "powered": device.powered,
                 "is_primary": device.is_primary,
                 "hidden": device.hidden,
-                "rssi": hardware.rssi if hardware else None,
                 "is_gateway": hardware.is_gateway if hardware else None,
+                "rssi_now": reading.rssi if reading else None,
+                "last_seen": reading.seen_at.isoformat() if reading else None,
             }
         )
     return {
@@ -51,6 +53,16 @@ async def async_get_config_entry_diagnostics(
                 hass, connectable=True
             ),
             "mesh_connected": site.manager.connected,
+        },
+        "connection": {
+            "ping_failures": site.ping_failures,
+            "last_ping_failure": (
+                site.last_ping_failure.isoformat() if site.last_ping_failure else None
+            ),
+            "recent_events": [
+                {"at": moment.isoformat(), "connected": connected}
+                for moment, connected in site.connection_events
+            ],
         },
         "cache": {
             "last_fetched": (

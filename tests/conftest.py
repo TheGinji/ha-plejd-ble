@@ -93,6 +93,7 @@ def mesh_mock() -> Generator[SimpleNamespace]:
         patch("pyplejd.PlejdManager.broadcast_time", AsyncMock()) as broadcast_time,
         patch("pyplejd.PlejdManager.disconnect", AsyncMock()) as disconnect,
         patch("pyplejd.PlejdManager.close_stale", AsyncMock()) as close_stale,
+        patch("pyplejd.PlejdManager.set_blacklist", AsyncMock()) as set_blacklist,
         patch(
             "pyplejd.ble.PlejdMesh.connected",
             new_callable=PropertyMock,
@@ -104,6 +105,7 @@ def mesh_mock() -> Generator[SimpleNamespace]:
             broadcast_time=broadcast_time,
             disconnect=disconnect,
             close_stale=close_stale,
+            set_blacklist=set_blacklist,
             connected=connected,
         )
 

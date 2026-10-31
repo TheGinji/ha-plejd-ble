@@ -1,0 +1,109 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Se connecter à Plejd",
+        "description": "Utilisez le compte de l'application Plejd. Votre mot de passe est conservé dans Home Assistant et sert à actualiser votre liste d'appareils environ une fois par semaine. Le contrôle passe par Bluetooth.",
+        "data": {
+          "username": "Adresse e-mail",
+          "password": "Mot de passe"
+        }
+      },
+      "site": {
+        "title": "Choisissez votre site",
+        "data": {
+          "site_id": "Site"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Se reconnecter à Plejd",
+        "description": "Plejd n'a pas accepté l'identifiant enregistré. Saisissez à nouveau vos identifiants.",
+        "data": {
+          "username": "Adresse e-mail",
+          "password": "Mot de passe"
+        }
+      },
+      "reconfigure": {
+        "title": "Modifier la connexion Plejd",
+        "data": {
+          "username": "Adresse e-mail",
+          "password": "Mot de passe"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Adresse e-mail ou mot de passe incorrect.",
+      "cannot_connect": "Le cloud Plejd est injoignable. Réessayez plus tard.",
+      "site_not_found": "Ce compte n'a pas accès au site configuré.",
+      "unknown": "Erreur inattendue. Consultez le journal pour plus de détails."
+    },
+    "abort": {
+      "already_configured": "Ce site est déjà configuré.",
+      "already_in_progress": "La configuration est déjà en cours.",
+      "bluetooth_not_available": "Plejd nécessite au moins un adaptateur Bluetooth ou un proxy Bluetooth.",
+      "no_sites": "Aucun site Plejd n'a été trouvé pour ce compte.",
+      "reauth_successful": "Identifiants mis à jour.",
+      "reconfigure_successful": "Identifiants mis à jour."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Points de connexion Bluetooth",
+        "description": "Home Assistant se connecte à vos appareils Plejd par l'intermédiaire d'un des appareils alimentés par le secteur. Choisissez ceux qui peuvent être utilisés. Décochez un appareil si son signal Bluetooth est faible ou instable.",
+        "data": {
+          "allowed_devices": "Appareils autorisés"
+        }
+      }
+    },
+    "error": {
+      "no_gateway": "Choisissez au moins un appareil."
+    },
+    "abort": {
+      "not_loaded": "Plejd BLE ne fonctionne pas actuellement. Réessayez une fois l'intégration démarrée.",
+      "no_gateways": "Aucun appareil alimenté par le secteur n'a été trouvé."
+    }
+  },
+  "entity": {
+    "button": {
+      "refresh_cloud": {
+        "name": "Actualiser la liste des appareils"
+      }
+    },
+    "event": {
+      "button": {
+        "name": "Bouton {number}"
+      }
+    },
+    "sensor": {
+      "last_cloud_sync": {
+        "name": "Dernière synchronisation avec le cloud"
+      },
+      "battery_level": {
+        "name": "Niveau de batterie"
+      },
+      "last_seen": {
+        "name": "Vu pour la dernière fois"
+      },
+      "signal_strength": {
+        "name": "Force du signal"
+      }
+    },
+    "binary_sensor": {
+      "mesh_connected": {
+        "name": "Connexion au réseau Bluetooth"
+      }
+    }
+  },
+  "issues": {
+    "cloud_unreachable": {
+      "title": "Cloud Plejd injoignable",
+      "description": "La liste des appareils n'a pas pu être actualisée depuis le cloud Plejd depuis plus de sept jours. Plejd BLE continue de fonctionner avec la liste enregistrée. Les appareils nouveaux ou renommés n'apparaîtront que lorsque le cloud sera de nouveau joignable."
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "Il n'y a actuellement aucune connexion Bluetooth avec le réseau maillé Plejd."
+    }
+  }
+}

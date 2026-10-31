@@ -46,11 +46,59 @@
       "reconfigure_successful": "Login updated."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bluetooth connection points",
+        "description": "Home Assistant connects to your Plejd devices through one of the devices that run on mains power. Choose which of them may be used. Untick a device if its Bluetooth signal is weak or unstable.",
+        "data": {
+          "allowed_devices": "Allowed devices"
+        }
+      }
+    },
+    "error": {
+      "no_gateway": "Choose at least one device."
+    },
+    "abort": {
+      "not_loaded": "Plejd BLE is not running right now. Try again once the integration has started.",
+      "no_gateways": "No devices on mains power were found."
+    }
+  },
   "entity": {
+    "button": {
+      "refresh_cloud": {
+        "name": "Refresh device list"
+      }
+    },
     "event": {
       "button": {
         "name": "Button {number}"
       }
+    },
+    "sensor": {
+      "last_cloud_sync": {
+        "name": "Last cloud sync"
+      },
+      "battery_level": {
+        "name": "Battery level"
+      },
+      "last_seen": {
+        "name": "Last seen"
+      },
+      "signal_strength": {
+        "name": "Signal strength"
+      }
+    },
+    "binary_sensor": {
+      "mesh_connected": {
+        "name": "Bluetooth mesh connection"
+      }
+    }
+  },
+  "issues": {
+    "cloud_unreachable": {
+      "title": "Plejd cloud is not reachable",
+      "description": "The device list could not be refreshed from the Plejd cloud for more than seven days. Plejd BLE keeps working with the saved list. New or renamed devices only appear once the cloud is reachable again."
     }
   },
   "exceptions": {

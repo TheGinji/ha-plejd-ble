@@ -1,6 +1,6 @@
 {
   "domain": "plejd_ble",
-  "name": "Plejd BLE",
+  "name": "Plejd BLE (revised)",
   "bluetooth": [
     {
       "connectable": true,
@@ -16,5 +16,5 @@
   "issue_tracker": "https://github.com/TheGinji/ha-plejd-ble/issues",
   "loggers": ["pyplejd"],
   "requirements": ["pyplejd==0.22.0"],
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

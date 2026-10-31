@@ -1,0 +1,28 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "mesh_connected": {
+        "default": "mdi:bluetooth-off",
+        "state": {
+          "on": "mdi:bluetooth-connect"
+        }
+      }
+    },
+    "button": {
+      "refresh_cloud": {
+        "default": "mdi:cloud-refresh"
+      }
+    },
+    "sensor": {
+      "battery_level": {
+        "default": "mdi:battery-unknown"
+      },
+      "last_cloud_sync": {
+        "default": "mdi:cloud-check"
+      },
+      "last_seen": {
+        "default": "mdi:clock-check-outline"
+      }
+    }
+  }
+}
