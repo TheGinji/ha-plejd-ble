@@ -36,4 +36,4 @@ class PlejdRefreshButton(ButtonEntity):
 
     async def async_press(self) -> None:
         """Vraag een verse apparatenlijst en laad de integratie opnieuw."""
-        await self._site.async_request_refresh()
+        self._site.async_request_refresh()
