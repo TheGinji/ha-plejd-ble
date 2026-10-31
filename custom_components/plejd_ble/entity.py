@@ -24,7 +24,7 @@ class PlejdEntity(Entity):
         self._device = device
         self._data: dict[str, Any] = {}
         self._attr_unique_id = ":".join(device.identifier)
-        self._attr_device_info = site.device_info(device)
+        self._attr_device_info = site.entity_device_info(device)
         self._attr_entity_registry_visible_default = not device.hidden
 
     @property

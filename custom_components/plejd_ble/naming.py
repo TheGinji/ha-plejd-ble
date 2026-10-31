@@ -1,4 +1,4 @@
-"""Namen voor Plejd-apparaten, zonder lege of dubbele namen."""
+"""Namen voor Plejd-apparaten, zonder lege namen en zonder dubbelen per kamer."""
 
 from __future__ import annotations
 
@@ -17,47 +17,29 @@ class NameSource:
 
 
 def _first_choice(source: NameSource) -> str:
-    """Geef de titel uit de cloud, of anders ruimte plus model."""
-    if title := source.title.strip():
-        return title
-    parts = [part for part in (source.room.strip(), source.hardware.strip()) if part]
-    return " ".join(parts) or "Plejd"
-
-
-def _with_room(source: NameSource) -> str:
-    """Zet de ruimte voor de titel, tenzij die er al in staat."""
-    title = source.title.strip()
-    room = source.room.strip()
-    if not title or not room or room.lower() in title.lower():
-        return _first_choice(source)
-    return f"{room} {title}"
-
-
-def _duplicates(names: dict[str, str]) -> list[list[str]]:
-    """Geef groepen identifiers die dezelfde naam hebben."""
-    groups: dict[str, list[str]] = defaultdict(list)
-    for identifier, name in names.items():
-        groups[name.casefold()].append(identifier)
-    return [sorted(group) for group in groups.values() if len(group) > 1]
+    """Geef de titel uit de cloud, of anders het model."""
+    return source.title.strip() or source.hardware.strip() or "Plejd"
 
 
 def build_names(sources: list[NameSource]) -> dict[str, str]:
-    """Bepaal per apparaat een naam die uniek en voorspelbaar is.
+    """Bepaal per apparaat een naam die duidelijk en voorspelbaar is.
 
-    Zo worden entiteit-ID's niet "plafondlicht_2" en "plafondlicht_3", maar
-    "slaapkamer_1_plafondlicht" en "slaapkamer_2_plafondlicht".
+    De kamer zetten we bewust niet in de naam: Home Assistant zet de kamer zelf
+    voor de entiteit-ID, zodat "Plafondlicht" in twee slaapkamers
+    "slaapkamer_1_plafondlicht" en "slaapkamer_2_plafondlicht" wordt. Alleen
+    apparaten met dezelfde naam in dezelfde kamer krijgen een volgnummer.
     """
     by_id = {source.identifier: source for source in sources}
     names = {identifier: _first_choice(source) for identifier, source in by_id.items()}
 
-    # Stap 1: dubbele titels krijgen de ruimte ervoor.
-    for group in _duplicates(names):
-        for identifier in group:
-            names[identifier] = _with_room(by_id[identifier])
+    groups: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for identifier, name in names.items():
+        room = by_id[identifier].room.strip().casefold()
+        groups[(room, name.casefold())].append(identifier)
 
-    # Stap 2: wat dan nog dubbel is, krijgt een volgnummer.
-    for group in _duplicates(names):
-        for number, identifier in enumerate(group, start=1):
-            names[identifier] = f"{names[identifier]} {number}"
+    for group in groups.values():
+        if len(group) > 1:
+            for number, identifier in enumerate(sorted(group), start=1):
+                names[identifier] = f"{names[identifier]} {number}"
 
     return names

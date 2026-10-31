@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import inspect
 import logging
 from typing import Any
 
@@ -179,21 +180,38 @@ class PlejdSite:
             info["via_device"] = (DOMAIN, device.parent_identifier)
         return info
 
+    def entity_device_info(self, device: Any) -> DeviceInfo:
+        """Verwijs vanuit een entiteit naar het apparaat dat al is aangemaakt."""
+        return DeviceInfo(identifiers={(DOMAIN, device.device_identifier)})
+
     @callback
     def async_register_devices(self) -> None:
         """Zet alle apparaten in het register, hoofdapparaten eerst."""
         registry = dr.async_get(self.hass)
-        done: set[str] = set()
+        # Nieuwere versies van Home Assistant willen via_device_id in plaats
+        # van via_device; oudere kennen dat nog niet.
+        uses_via_device_id = (
+            "via_device_id" in inspect.signature(registry.async_get_or_create).parameters
+        )
+        created: dict[str, dr.DeviceEntry] = {}
         ordered = sorted(
             (d for d in self.devices if d.outputType),
             key=lambda d: d.parent_identifier != d.device_identifier,
         )
         for device in ordered:
-            if device.device_identifier in done:
+            identifier = device.device_identifier
+            if identifier in created:
                 continue
-            done.add(device.device_identifier)
-            registry.async_get_or_create(
-                config_entry_id=self.entry.entry_id, **self.device_info(device)
+            info = self.device_info(device)
+            via_device = info.pop("via_device", None)
+            extra: dict[str, Any] = {}
+            if via_device is not None:
+                if uses_via_device_id:
+                    extra["via_device_id"] = created[via_device[1]].id
+                else:
+                    extra["via_device"] = via_device
+            created[identifier] = registry.async_get_or_create(
+                config_entry_id=self.entry.entry_id, **info, **extra
             )
 
     async def async_start(self) -> None:
