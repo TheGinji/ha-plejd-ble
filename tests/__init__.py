@@ -22,7 +22,7 @@ RELAY_B = "A0B1C2000005:O:1"  # Tuinlamp
 BUTTON_DEVICE = "A0B1C2000006:I:0"  # Knop 1 van het paneel
 BUTTON_ENTITY = f"{BUTTON_DEVICE}:press"
 MOTION = "A0B1C2000007:I:0"  # Bewegingssensor
-NUMBER_OF_ENTITIES = 11
+NUMBER_OF_ENTITIES = 13  # 11 apparaten, de verversknop en de diagnosesensor
 
 
 async def setup_integration(hass: HomeAssistant, entry: MockConfigEntry) -> None:
