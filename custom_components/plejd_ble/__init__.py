@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import DOMAIN
-from .site import PlejdBleConfigEntry, PlejdSite
+from .site import PlejdBleConfigEntry, PlejdSite, cache_store
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -41,6 +41,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: PlejdBleConfigEntry) ->
         return False
     await entry.runtime_data.async_stop()
     return True
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: PlejdBleConfigEntry) -> None:
+    """Verwijder de lokaal bewaarde sitegegevens als het item wordt verwijderd."""
+    await cache_store(hass, entry.entry_id).async_remove()
 
 
 async def async_remove_config_entry_device(

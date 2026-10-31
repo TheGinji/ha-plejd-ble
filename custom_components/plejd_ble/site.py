@@ -43,6 +43,11 @@ _LOGGER = logging.getLogger(__name__)
 type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
 
 
+def cache_store(hass: HomeAssistant, entry_id: str) -> Store[dict[str, Any]]:
+    """Geef de opslag waarin de sitegegevens lokaal worden bewaard."""
+    return Store(hass, CACHE_STORE_VERSION, f"{DOMAIN}.{entry_id}")
+
+
 class CachedCloudSite(PlejdCloudSite):
     """PlejdCloudSite die de cloud alleen aanroept als dat nodig is.
 
@@ -85,9 +90,7 @@ class PlejdSite:
         """Maak de site aan, zonder iets te verbinden."""
         self.hass = hass
         self.entry = entry
-        self._store: Store[dict[str, Any]] = Store(
-            hass, CACHE_STORE_VERSION, f"{DOMAIN}.{entry.entry_id}"
-        )
+        self._store = cache_store(hass, entry.entry_id)
         self.manager = PlejdManager(
             username=entry.data[CONF_USERNAME],
             password=entry.data[CONF_PASSWORD],

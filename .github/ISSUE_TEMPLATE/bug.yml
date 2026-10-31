@@ -1,0 +1,70 @@
+name: Fout melden
+description: Iets werkt niet zoals het hoort
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gebruik je **hass-plejd** (van thomasloven)? Dat is een andere integratie. Meld je probleem dan daar.
+
+        Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat je hier plakt.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Eerst controleren
+      options:
+        - label: Het werkt wel in de Plejd-app op mijn telefoon, via Bluetooth, in de buurt van de lampen.
+          required: true
+        - label: hass-plejd staat niet tegelijk aan.
+          required: true
+        - label: Ik heb geen wachtwoorden, e-mailadressen of adressen in dit formulier gezet.
+          required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Wat gaat er mis?
+      description: Wat verwachtte je, en wat gebeurt er?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versie van Plejd BLE
+      placeholder: bijvoorbeeld 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Versie van Home Assistant
+      placeholder: bijvoorbeeld 2026.10.4
+    validations:
+      required: true
+  - type: dropdown
+    id: bluetooth
+    attributes:
+      label: Hoe is Bluetooth geregeld?
+      options:
+        - Bluetooth-adapter in of aan de computer
+        - ESPHome Bluetooth-proxy
+        - Allebei
+        - Weet ik niet
+    validations:
+      required: true
+  - type: input
+    id: devices
+    attributes:
+      label: Welke Plejd-apparaten gaat het om?
+      description: Alleen de modelnamen.
+      placeholder: bijvoorbeeld DIM-02, WPH-01-LC, WMS-01
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostische gegevens
+      description: Download ze bij de integratie en sleep het bestand hierin. Ze bevatten geen namen, adressen of sleutels.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logboek
+      description: Zet logging aan zoals in de README staat en plak de relevante regels.
+      render: text

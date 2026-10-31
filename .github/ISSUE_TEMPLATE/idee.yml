@@ -1,0 +1,30 @@
+name: Idee voorstellen
+description: Een wens of verbetering
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Wat je voorstelt, moet te testen zijn met echte Plejd-apparaten. Zonder apparaat kunnen we het niet controleren en beloven we het niet.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Wat zou je willen?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Waarom, en hoe zou je het gebruiken?
+  - type: input
+    id: devices
+    attributes:
+      label: Om welke Plejd-apparaten gaat het?
+      description: Alleen de modelnamen.
+      placeholder: bijvoorbeeld TMR-01
+  - type: checkboxes
+    id: test
+    attributes:
+      label: Testen
+      options:
+        - label: Ik heb dit apparaat zelf en kan een testversie uitproberen.
