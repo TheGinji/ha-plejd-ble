@@ -11,8 +11,8 @@ Een eigen Plejd-integratie met minder overbodige entiteiten en rustiger logs. Da
 ## Let op
 
 - Dit is een **andere integratie dan [hass-plejd](https://github.com/thomasloven/hass-plejd)**, ook al lijkt de naam erop. De twee kunnen niet tegelijk actief zijn, want een Plejd-apparaat houdt maar één Bluetooth-verbinding tegelijk vast.
-- De integratie gebruikt de cloud-API van de Plejd-app om je apparaten en sleutels op te halen. Plejd keurt dat niet officieel goed.
-- Bediening gaat via Bluetooth. Bediening via de cloud is niet mogelijk.
+- De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt om je apparaten en sleutels op te halen. We weten niet of Plejd dit officieel ondersteunt.
+- Bediening gaat via Bluetooth. Bediening via de cloud wordt niet ondersteund.
 
 ## English summary
 
