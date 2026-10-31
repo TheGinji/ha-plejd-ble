@@ -26,6 +26,7 @@ from . import (
     get_device,
     get_entity_id,
     push_state,
+    setup_entry,
     setup_integration,
 )
 from .conftest import ENTRY_ID
@@ -163,8 +164,7 @@ async def test_signal_sensors_show_the_latest_measurement(
         registry.async_get_or_create(
             "sensor", DOMAIN, f"{DIMMER}:{key}", config_entry=config_entry
         )
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
+    await setup_entry(hass, config_entry)
     rssi_id = get_entity_id(hass, "sensor", f"{DIMMER}:signal_strength")
     seen_id = get_entity_id(hass, "sensor", f"{DIMMER}:last_seen")
     assert hass.states.get(rssi_id).state == "unknown"
