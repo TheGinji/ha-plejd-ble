@@ -1,0 +1,61 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Log in to Plejd",
+        "description": "Use the account of the Plejd app. Your password is stored in Home Assistant and is used to refresh your device list about once a week. Control runs over Bluetooth.",
+        "data": {
+          "username": "Email address",
+          "password": "Password"
+        }
+      },
+      "site": {
+        "title": "Choose your site",
+        "data": {
+          "site_id": "Site"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in to Plejd again",
+        "description": "Plejd did not accept the saved login. Enter your login again.",
+        "data": {
+          "username": "Email address",
+          "password": "Password"
+        }
+      },
+      "reconfigure": {
+        "title": "Change Plejd login",
+        "data": {
+          "username": "Email address",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Wrong email address or password.",
+      "cannot_connect": "Could not reach the Plejd cloud. Try again later.",
+      "site_not_found": "This account does not have access to the configured site.",
+      "unknown": "Unexpected error. Check the log for details."
+    },
+    "abort": {
+      "already_configured": "This site is already configured.",
+      "already_in_progress": "Setup is already in progress.",
+      "bluetooth_not_available": "At least one Bluetooth adapter or Bluetooth proxy is needed to use Plejd.",
+      "no_sites": "No Plejd sites were found for this account.",
+      "reauth_successful": "Login updated.",
+      "reconfigure_successful": "Login updated."
+    }
+  },
+  "entity": {
+    "event": {
+      "button": {
+        "name": "Button {number}"
+      }
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "There is no Bluetooth connection to the Plejd mesh right now."
+    }
+  }
+}

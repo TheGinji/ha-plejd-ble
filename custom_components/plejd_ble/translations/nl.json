@@ -1,0 +1,61 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Inloggen bij Plejd",
+        "description": "Gebruik het account van de Plejd-app. Je wachtwoord wordt in Home Assistant bewaard en gebruikt om je apparatenlijst ongeveer eens per week te verversen. De bediening loopt via Bluetooth.",
+        "data": {
+          "username": "E-mailadres",
+          "password": "Wachtwoord"
+        }
+      },
+      "site": {
+        "title": "Kies je site",
+        "data": {
+          "site_id": "Site"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Opnieuw inloggen bij Plejd",
+        "description": "Plejd heeft de opgeslagen inlog niet geaccepteerd. Vul je inloggegevens opnieuw in.",
+        "data": {
+          "username": "E-mailadres",
+          "password": "Wachtwoord"
+        }
+      },
+      "reconfigure": {
+        "title": "Plejd-inlog wijzigen",
+        "data": {
+          "username": "E-mailadres",
+          "password": "Wachtwoord"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Onjuist e-mailadres of wachtwoord.",
+      "cannot_connect": "De Plejd-cloud is niet bereikbaar. Probeer het later opnieuw.",
+      "site_not_found": "Dit account heeft geen toegang tot de ingestelde site.",
+      "unknown": "Onverwachte fout. Kijk in het logboek voor details."
+    },
+    "abort": {
+      "already_configured": "Deze site is al ingesteld.",
+      "already_in_progress": "De installatie is al bezig.",
+      "bluetooth_not_available": "Voor Plejd is minstens één Bluetooth-adapter of Bluetooth-proxy nodig.",
+      "no_sites": "Er zijn geen Plejd-sites gevonden voor dit account.",
+      "reauth_successful": "Inlog bijgewerkt.",
+      "reconfigure_successful": "Inlog bijgewerkt."
+    }
+  },
+  "entity": {
+    "event": {
+      "button": {
+        "name": "Knop {number}"
+      }
+    }
+  },
+  "exceptions": {
+    "not_connected": {
+      "message": "Er is op dit moment geen Bluetooth-verbinding met het Plejd-mesh."
+    }
+  }
+}
