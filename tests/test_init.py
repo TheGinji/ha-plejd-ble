@@ -139,7 +139,7 @@ async def test_only_useful_entities_are_created(
 async def test_devices_have_clear_names(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
-    """Lege namen worden het model, en de kamer zit niet in de apparaatnaam."""
+    """Lege namen worden de productnaam, en de kamer zit niet in de apparaatnaam."""
     devices = dr.async_entries_for_config_entry(
         dr.async_get(hass), loaded_entry.entry_id
     )
@@ -151,8 +151,8 @@ async def test_devices_have_clear_names(
         "Plejd BLE",
         "Spot",
         "Tuinlamp",
-        "WPH-01-LC",
         "Wandlamp",
+        "Wireless push button",
         "Zithoek",
     ]
 
@@ -170,7 +170,7 @@ async def test_entity_ids_contain_the_room_once(
         "light.slaapkamer_2_plafondlicht",
         "light.woonkamer_zithoek",
         "light.hal_spot",
-        "event.hal_wph_01_lc_button_1",
+        "event.hal_wireless_push_button_button_1",
         "switch.woonkamer_wandlamp",
         "switch.woonkamer_tuinlamp",
     ):

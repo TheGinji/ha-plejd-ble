@@ -141,7 +141,7 @@ async def test_button_events(
     entity_id = get_entity_id(hass, "event", BUTTON_ENTITY)
     device = get_device(loaded_entry, BUTTON_DEVICE)
     assert hass.states.get(entity_id).attributes["friendly_name"] == (
-        "WPH-01-LC Button 1"
+        "Wireless push button Button 1"
     )
 
     push_update(device, {"button": 0, "action": "press"})
