@@ -26,7 +26,7 @@ from homeassistant.util import dt as dt_util
 from custom_components.plejd_ble import async_remove_config_entry_device
 from custom_components.plejd_ble.const import DOMAIN
 
-from . import NUMBER_OF_ENTITIES, setup_integration
+from . import NUMBER_OF_ENTITIES, get_device_entry, setup_integration
 from .conftest import STORE_KEY
 
 
@@ -137,30 +137,49 @@ async def test_only_useful_entities_are_created(
 async def test_devices_have_clear_names(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
-    """Dubbele en lege namen worden duidelijk gemaakt."""
+    """Lege namen worden het model, en de kamer zit niet in de apparaatnaam."""
     devices = dr.async_entries_for_config_entry(
         dr.async_get(hass), loaded_entry.entry_id
     )
 
-    assert {device.name for device in devices} == {
-        "Zithoek",
-        "Slaapkamer 1 Plafondlicht",
-        "Slaapkamer 2 Plafondlicht",
-        "Spot",
-        "Wandlamp",
-        "Tuinlamp",
-        "Hal WPH-01-LC",
+    assert sorted(device.name for device in devices) == [
         "Beweging toilet",
-    }
+        "Plafondlicht",
+        "Plafondlicht",
+        "Spot",
+        "Tuinlamp",
+        "WPH-01-LC",
+        "Wandlamp",
+        "Zithoek",
+    ]
+
+
+async def test_entity_ids_contain_the_room_once(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Home Assistant zet de kamer voor de entiteit-ID, wij herhalen die niet.
+
+    Dit gedrag hoort bij recente versies van Home Assistant. Verandert het,
+    dan laat deze test dat meteen zien.
+    """
+    for entity_id in (
+        "light.slaapkamer_1_plafondlicht",
+        "light.slaapkamer_2_plafondlicht",
+        "light.woonkamer_zithoek",
+        "light.hal_spot",
+        "event.hal_wph_01_lc_button_1",
+        "switch.woonkamer_wandlamp",
+        "switch.woonkamer_tuinlamp",
+    ):
+        assert hass.states.get(entity_id) is not None, entity_id
 
 
 async def test_device_hierarchy_and_details(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
     """De tweede uitgang van een relais hoort onder de eerste."""
-    registry = dr.async_get(hass)
-    first = registry.async_get_device(identifiers={(DOMAIN, "A0B1C2000005:dev-rel-a")})
-    second = registry.async_get_device(identifiers={(DOMAIN, "A0B1C2000005:dev-rel-b")})
+    first = get_device_entry(hass, loaded_entry, "A0B1C2000005:dev-rel-a")
+    second = get_device_entry(hass, loaded_entry, "A0B1C2000005:dev-rel-b")
 
     assert first is not None
     assert second is not None
@@ -188,12 +207,12 @@ async def test_remove_device(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
     """Alleen apparaten die niet meer in de site zitten mogen weg."""
-    registry = dr.async_get(hass)
-    active = registry.async_get_device(identifiers={(DOMAIN, "A0B1C2000001:dev-dimmer")})
-    orphan = registry.async_get_or_create(
+    active = get_device_entry(hass, loaded_entry, "A0B1C2000001:dev-dimmer")
+    orphan = dr.async_get(hass).async_get_or_create(
         config_entry_id=loaded_entry.entry_id, identifiers={(DOMAIN, "weesapparaat")}
     )
 
+    assert active is not None
     assert not await async_remove_config_entry_device(hass, loaded_entry, active)
     assert await async_remove_config_entry_device(hass, loaded_entry, orphan)
 

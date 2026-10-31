@@ -7,7 +7,7 @@ from typing import Any
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.entity_platform import async_get_platforms
 
 from custom_components.plejd_ble.const import DOMAIN
@@ -37,6 +37,16 @@ def get_entity_id(hass: HomeAssistant, domain: str, unique_id: str) -> str:
     entity_id = er.async_get(hass).async_get_entity_id(domain, DOMAIN, unique_id)
     assert entity_id is not None, f"Geen entiteit gevonden voor {unique_id}"
     return entity_id
+
+
+def get_device_entry(
+    hass: HomeAssistant, entry: MockConfigEntry, identifier: str
+) -> dr.DeviceEntry | None:
+    """Zoek een apparaat in het register, zonder verouderde functies te gebruiken."""
+    for device in dr.async_entries_for_config_entry(dr.async_get(hass), entry.entry_id):
+        if (DOMAIN, identifier) in device.identifiers:
+            return device
+    return None
 
 
 def get_entity(hass: HomeAssistant, entity_id: str) -> Any:
