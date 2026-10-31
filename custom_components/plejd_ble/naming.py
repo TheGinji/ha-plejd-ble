@@ -5,6 +5,24 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
+# Productnamen zoals Plejd ze zelf gebruikt. Alleen modellen waarvan de naam bij
+# Plejd of een leverancier is nagekeken staan hier; de rest houdt het modelnummer.
+# De sleutel is de productfamilie, dus WPH-01-LC valt onder WPH-01.
+PRODUCT_NAMES = {
+    "WPH-01": "Wireless push button",
+    "WMS-01": "Wireless motion sensor",
+    "LED-75": "LED driver 75 W",
+    "DWN-01": "Downlight",
+    "DWN-02": "Downlight",
+}
+
+
+def product_name(hardware: str) -> str:
+    """Geef de productnaam bij een model, of het modelnummer zelf als die onbekend is."""
+    model = hardware.strip()
+    family = "-".join(model.split("-")[:2])
+    return PRODUCT_NAMES.get(family, model)
+
 
 @dataclass(frozen=True)
 class NameSource:
@@ -17,8 +35,8 @@ class NameSource:
 
 
 def _first_choice(source: NameSource) -> str:
-    """Geef de titel uit de cloud, of anders het model."""
-    return source.title.strip() or source.hardware.strip() or "Plejd"
+    """Geef de titel uit de cloud, of anders de productnaam of het model."""
+    return source.title.strip() or product_name(source.hardware) or "Plejd"
 
 
 def build_names(sources: list[NameSource]) -> dict[str, str]:
