@@ -120,7 +120,7 @@ async def test_wrong_login_starts_reauth(
 async def test_only_useful_entities_are_created(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
-    """Er zijn geen diagnose-entiteiten, en verborgen apparaten ontbreken."""
+    """Geen diagnose-entiteiten per apparaat, en verborgen apparaten ontbreken."""
     entities = er.async_entries_for_config_entry(
         er.async_get(hass), loaded_entry.entry_id
     )
@@ -131,6 +131,8 @@ async def test_only_useful_entities_are_created(
         "switch",
         "event",
         "binary_sensor",
+        "button",
+        "sensor",
     }
 
 
@@ -146,6 +148,7 @@ async def test_devices_have_clear_names(
         "Beweging toilet",
         "Plafondlicht",
         "Plafondlicht",
+        "Plejd BLE",
         "Spot",
         "Tuinlamp",
         "WPH-01-LC",
