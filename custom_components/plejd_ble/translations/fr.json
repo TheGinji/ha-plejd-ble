@@ -78,6 +78,20 @@
     "sensor": {
       "last_cloud_sync": {
         "name": "Dernière synchronisation avec le cloud"
+      },
+      "battery_level": {
+        "name": "Niveau de batterie"
+      },
+      "last_seen": {
+        "name": "Vu pour la dernière fois"
+      },
+      "signal_strength": {
+        "name": "Force du signal"
+      }
+    },
+    "binary_sensor": {
+      "mesh_connected": {
+        "name": "Connexion au réseau Bluetooth"
       }
     }
   },
