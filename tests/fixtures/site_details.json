@@ -1,0 +1,402 @@
+{
+  "site": {
+    "objectId": "site-obj-1",
+    "siteId": "site-1",
+    "title": "Voorbeeldstraat 1",
+    "version": 1
+  },
+  "plejdMesh": {
+    "objectId": "mesh-obj-1",
+    "siteId": "site-1",
+    "plejdMeshId": "mesh-1",
+    "meshKey": "00000000000000000000000000000000",
+    "cryptoKey": "00112233445566778899AABBCCDDEEFF"
+  },
+  "rooms": [
+    {
+      "objectId": "room-obj-living",
+      "siteId": "site-1",
+      "roomId": "room-living",
+      "title": "Woonkamer",
+      "category": "living"
+    },
+    {
+      "objectId": "room-obj-hall",
+      "siteId": "site-1",
+      "roomId": "room-hall",
+      "title": "Hal",
+      "category": "hall"
+    },
+    {
+      "objectId": "room-obj-bed1",
+      "siteId": "site-1",
+      "roomId": "room-bed1",
+      "title": "Slaapkamer 1",
+      "category": "bedroom"
+    },
+    {
+      "objectId": "room-obj-bed2",
+      "siteId": "site-1",
+      "roomId": "room-bed2",
+      "title": "Slaapkamer 2",
+      "category": "bedroom"
+    },
+    {
+      "objectId": "room-obj-toilet",
+      "siteId": "site-1",
+      "roomId": "room-toilet",
+      "title": "Toilet",
+      "category": "toilet"
+    }
+  ],
+  "scenes": [
+    {
+      "objectId": "scene-obj-1",
+      "sceneId": "scene-1",
+      "siteId": "site-1",
+      "title": "Avond"
+    }
+  ],
+  "devices": [
+    {
+      "objectId": "dev-dimmer",
+      "deviceId": "A0B1C2000001",
+      "siteId": "site-1",
+      "title": "Zithoek",
+      "traits": 3,
+      "roomId": "room-living",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "LIGHT"
+    },
+    {
+      "objectId": "dev-bed1",
+      "deviceId": "A0B1C2000002",
+      "siteId": "site-1",
+      "title": "Plafondlicht",
+      "traits": 3,
+      "roomId": "room-bed1",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "LIGHT"
+    },
+    {
+      "objectId": "dev-bed2",
+      "deviceId": "A0B1C2000003",
+      "siteId": "site-1",
+      "title": "Plafondlicht",
+      "traits": 3,
+      "roomId": "room-bed2",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "LIGHT"
+    },
+    {
+      "objectId": "dev-spot",
+      "deviceId": "A0B1C2000004",
+      "siteId": "site-1",
+      "title": "Spot",
+      "traits": 7,
+      "roomId": "room-hall",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "LIGHT"
+    },
+    {
+      "objectId": "dev-rel-a",
+      "deviceId": "A0B1C2000005",
+      "siteId": "site-1",
+      "title": "Wandlamp",
+      "traits": 1,
+      "roomId": "room-living",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "RELAY"
+    },
+    {
+      "objectId": "dev-rel-b",
+      "deviceId": "A0B1C2000005",
+      "siteId": "site-1",
+      "title": "Tuinlamp",
+      "traits": 1,
+      "roomId": "room-living",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "RELAY"
+    },
+    {
+      "objectId": "dev-panel",
+      "deviceId": "A0B1C2000006",
+      "siteId": "site-1",
+      "title": "",
+      "traits": 0,
+      "roomId": "room-hall",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "SENSOR"
+    },
+    {
+      "objectId": "dev-motion",
+      "deviceId": "A0B1C2000007",
+      "siteId": "site-1",
+      "title": "Beweging toilet",
+      "traits": 0,
+      "roomId": "room-toilet",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": false,
+      "outputType": "SENSOR"
+    },
+    {
+      "objectId": "dev-hidden",
+      "deviceId": "A0B1C2000008",
+      "siteId": "site-1",
+      "title": "Verborgen lamp",
+      "traits": 3,
+      "roomId": "room-living",
+      "hiddenFromRoomList": false,
+      "hiddenFromIntegrations": true,
+      "outputType": "LIGHT"
+    }
+  ],
+  "plejdDevices": [
+    {
+      "objectId": "pd-1",
+      "deviceId": "A0B1C2000001",
+      "siteId": "site-1",
+      "hardwareId": "2",
+      "firmware": {
+        "objectId": "fw-1",
+        "notes": "DIM-02-LC2 testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-2",
+      "deviceId": "A0B1C2000002",
+      "siteId": "site-1",
+      "hardwareId": "3",
+      "firmware": {
+        "objectId": "fw-2",
+        "notes": "CCL-01 testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-3",
+      "deviceId": "A0B1C2000003",
+      "siteId": "site-1",
+      "hardwareId": "3",
+      "firmware": {
+        "objectId": "fw-3",
+        "notes": "CCL-01 testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-4",
+      "deviceId": "A0B1C2000004",
+      "siteId": "site-1",
+      "hardwareId": "4",
+      "firmware": {
+        "objectId": "fw-4",
+        "notes": "DWN-02 testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-5",
+      "deviceId": "A0B1C2000005",
+      "siteId": "site-1",
+      "hardwareId": "5",
+      "firmware": {
+        "objectId": "fw-5",
+        "notes": "REL-01-2P testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-6",
+      "deviceId": "A0B1C2000006",
+      "siteId": "site-1",
+      "hardwareId": "6",
+      "firmware": {
+        "objectId": "fw-6",
+        "notes": "WPH-01-LC testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-7",
+      "deviceId": "A0B1C2000007",
+      "siteId": "site-1",
+      "hardwareId": "7",
+      "firmware": {
+        "objectId": "fw-7",
+        "notes": "WMS-01 testfirmware",
+        "version": "1.2.3"
+      }
+    },
+    {
+      "objectId": "pd-8",
+      "deviceId": "A0B1C2000008",
+      "siteId": "site-1",
+      "hardwareId": "1",
+      "firmware": {
+        "objectId": "fw-8",
+        "notes": "DIM-01 testfirmware",
+        "version": "1.2.3"
+      }
+    }
+  ],
+  "inputSettings": [
+    {
+      "objectId": "in-panel-0",
+      "deviceId": "A0B1C2000006",
+      "siteId": "site-1",
+      "input": 0,
+      "buttonType": ""
+    },
+    {
+      "objectId": "in-panel-1",
+      "deviceId": "A0B1C2000006",
+      "siteId": "site-1",
+      "input": 1,
+      "buttonType": ""
+    },
+    {
+      "objectId": "in-panel-2",
+      "deviceId": "A0B1C2000006",
+      "siteId": "site-1",
+      "input": 2,
+      "buttonType": ""
+    },
+    {
+      "objectId": "in-panel-3",
+      "deviceId": "A0B1C2000006",
+      "siteId": "site-1",
+      "input": 3,
+      "buttonType": ""
+    },
+    {
+      "objectId": "in-motion",
+      "deviceId": "A0B1C2000007",
+      "siteId": "site-1",
+      "input": 0,
+      "buttonType": ""
+    }
+  ],
+  "outputSettings": [
+    {
+      "objectId": "out-dimmer",
+      "deviceId": "A0B1C2000001",
+      "siteId": "site-1",
+      "output": 0,
+      "deviceParseId": "dev-dimmer"
+    },
+    {
+      "objectId": "out-bed1",
+      "deviceId": "A0B1C2000002",
+      "siteId": "site-1",
+      "output": 0,
+      "deviceParseId": "dev-bed1"
+    },
+    {
+      "objectId": "out-bed2",
+      "deviceId": "A0B1C2000003",
+      "siteId": "site-1",
+      "output": 0,
+      "deviceParseId": "dev-bed2"
+    },
+    {
+      "objectId": "out-spot",
+      "deviceId": "A0B1C2000004",
+      "siteId": "site-1",
+      "output": 0,
+      "deviceParseId": "dev-spot",
+      "colorTemperature": {
+        "minTemperature": 2200,
+        "maxTemperature": 4000,
+        "behavior": "linear"
+      }
+    },
+    {
+      "objectId": "out-rel-a",
+      "deviceId": "A0B1C2000005",
+      "siteId": "site-1",
+      "output": 0,
+      "deviceParseId": "dev-rel-a"
+    },
+    {
+      "objectId": "out-rel-b",
+      "deviceId": "A0B1C2000005",
+      "siteId": "site-1",
+      "output": 1,
+      "deviceParseId": "dev-rel-b"
+    },
+    {
+      "objectId": "out-hidden",
+      "deviceId": "A0B1C2000008",
+      "siteId": "site-1",
+      "output": 0,
+      "deviceParseId": "dev-hidden"
+    }
+  ],
+  "motionSensors": [
+    {
+      "objectId": "motion-1",
+      "deviceId": "A0B1C2000007",
+      "siteId": "site-1",
+      "input": 0,
+      "deviceParseId": "dev-motion"
+    }
+  ],
+  "rxAddress": {},
+  "inputAddress": {
+    "A0B1C2000006": {
+      "0": 21,
+      "1": 22,
+      "2": 23,
+      "3": 24
+    },
+    "A0B1C2000007": {
+      "0": 31
+    }
+  },
+  "outputAddress": {
+    "A0B1C2000001": {
+      "0": 11
+    },
+    "A0B1C2000002": {
+      "0": 12
+    },
+    "A0B1C2000003": {
+      "0": 13
+    },
+    "A0B1C2000004": {
+      "0": 14
+    },
+    "A0B1C2000005": {
+      "0": 15,
+      "1": 16
+    },
+    "A0B1C2000008": {
+      "0": 17
+    }
+  },
+  "deviceAddress": {
+    "A0B1C2000001": 1,
+    "A0B1C2000002": 2,
+    "A0B1C2000003": 3,
+    "A0B1C2000004": 4,
+    "A0B1C2000005": 5,
+    "A0B1C2000006": 6,
+    "A0B1C2000007": 7,
+    "A0B1C2000008": 8
+  },
+  "outputGroups": {},
+  "roomAddress": {},
+  "sceneIndex": {
+    "scene-1": 1
+  },
+  "deviceLimit": 100
+}
