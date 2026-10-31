@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests en dekking
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code ophalen
+        uses: actions/checkout@v4
+
+      - name: Python instellen
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements_test.txt
+
+      - name: Testafhankelijkheden installeren
+        run: pip install -r requirements_test.txt
+
+      - name: Bluetooth-onderdelen van Home Assistant installeren
+        run: |
+          python - <<'PY' > bluetooth-requirements.txt
+          import json
+          from pathlib import Path
+
+          import homeassistant
+
+          base = Path(homeassistant.__file__).parent / "components"
+          for name in ("bluetooth", "bluetooth_adapters", "usb"):
+              manifest = json.loads((base / name / "manifest.json").read_text())
+              for requirement in manifest.get("requirements", []):
+                  print(requirement)
+          PY
+          pip install -r bluetooth-requirements.txt
+
+      - name: Tests draaien
+        run: pytest --cov-fail-under=95
