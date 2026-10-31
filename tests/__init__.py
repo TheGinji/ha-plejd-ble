@@ -6,7 +6,7 @@ from typing import Any
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CoreState, HomeAssistant
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.entity_platform import async_get_platforms
 
@@ -28,11 +28,22 @@ NUMBER_OF_ENTITIES = 25
 NUMBER_OF_ENABLED_ENTITIES = 14  # alles behalve de cloudsensor en die 10 sensoren
 
 
-async def setup_integration(hass: HomeAssistant, entry: MockConfigEntry) -> None:
-    """Zet de integratie op en wacht tot alles klaar is."""
-    entry.add_to_hass(hass)
+async def setup_entry(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    """Zet een al toegevoegd item op, alsof Home Assistant net opstart.
+
+    Bij het opstarten gebruikt de integratie de bewaarde apparatenlijst. Daarna,
+    als Home Assistant draait, haalt een herlaadbeurt de lijst vers op.
+    """
+    hass.set_state(CoreState.starting)
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
+    hass.set_state(CoreState.running)
+
+
+async def setup_integration(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    """Voeg het item toe, zet het op en wacht tot alles klaar is."""
+    entry.add_to_hass(hass)
+    await setup_entry(hass, entry)
 
 
 def get_entity_id(hass: HomeAssistant, domain: str, unique_id: str) -> str:
