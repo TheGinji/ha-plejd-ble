@@ -1,6 +1,6 @@
 {
   "domain": "plejd_ble",
-  "name": "Plejd BLE",
+  "name": "Plejd BLE (revised)",
   "bluetooth": [
     {
       "connectable": true,

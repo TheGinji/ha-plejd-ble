@@ -1,4 +1,4 @@
-# Plejd BLE
+# Plejd BLE (revised)
 
 [![HACS: aangepaste repository](https://img.shields.io/badge/HACS-aangepaste%20repository-orange.svg)](https://hacs.xyz/docs/faq/custom_repositories/)
 [![Home Assistant: getest op 2026.10](https://img.shields.io/badge/Home%20Assistant-getest%20op%202026.10-41BDF5.svg)](https://www.home-assistant.io/)
@@ -10,6 +10,8 @@
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-steun%20de%20maker-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/theginji)
 
 Home Assistant-integratie voor Plejd-verlichting via Bluetooth (BLE), gebouwd op [pyplejd](https://github.com/thomasloven/pyplejd). Je krijgt je lampen, relais, knoppen en bewegingssensoren in Home Assistant, zonder een berg extra entiteiten.
+
+In Home Assistant en HACS heet deze integratie **Plejd BLE (revised)**. De toevoeging is er om hem te onderscheiden van [hass-plejd](https://github.com/thomasloven/hass-plejd), die zichzelf "Plejd BLE" noemt. Het is een andere integratie, geen nieuwere versie van die van Thomas Lovén.
 
 > **Onofficieel.** Dit project is niet gemaakt, goedgekeurd of ondersteund door Plejd. Plejd is een merk van Plejd AB.
 >
@@ -33,7 +35,7 @@ Plejd BLE staat nog niet in de standaardlijst van HACS. Voeg hem toe als aangepa
 
 1. Open HACS, tik op de drie puntjes en kies **Aangepaste repositories**.
 2. Plak `https://github.com/TheGinji/ha-plejd-ble`, kies de categorie **Integratie** en voeg toe.
-3. Zoek **Plejd BLE** in HACS en download hem.
+3. Zoek **Plejd BLE (revised)** in HACS en download hem.
 4. Start Home Assistant opnieuw.
 
 Je hebt nodig:
@@ -46,7 +48,7 @@ Talen: Nederlands en Engels. Er zijn ook Duitse en Franse teksten, maar die zijn
 
 ## Instellen
 
-1. Ga naar **Instellingen → Apparaten en diensten → Integratie toevoegen** en kies **Plejd BLE**.
+1. Ga naar **Instellingen → Apparaten en diensten → Integratie toevoegen** en kies **Plejd BLE (revised)**. In de lijst staan twee integraties met de naam Plejd BLE. Die van ons heeft een lamp als icoon.
 2. Log in met je account van de Plejd-app. Heb je meerdere sites, kies er dan één.
 3. Klaar. Je apparaten verschijnen met de naam en de kamer uit de Plejd-app.
 
@@ -65,7 +67,7 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 | Apparatenlijst verversen | `button`, haalt de lijst opnieuw uit de Plejd-cloud |
 | Laatste cloud-synchronisatie | `sensor`, diagnostisch en standaard uit |
 
-Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het de naam van het model, bijvoorbeeld `WPH-01-LC`. Dezelfde naam in dezelfde kamer wordt genummerd. De kamer zet Home Assistant zelf voor de entiteit-ID, bijvoorbeeld `light.slaapkamer_1_plafondlicht`.
+Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het de productnaam van Plejd, bijvoorbeeld "Wireless push button". Van een model waarvan we de productnaam niet kennen, blijft het modelnummer over. Dezelfde naam in dezelfde kamer wordt genummerd. De kamer zet Home Assistant zelf voor de entiteit-ID, bijvoorbeeld `light.slaapkamer_1_plafondlicht`.
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
 
