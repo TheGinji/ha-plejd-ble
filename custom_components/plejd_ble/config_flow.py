@@ -14,8 +14,16 @@ from pyplejd import (
 import voluptuous as vol
 
 from homeassistant.components import bluetooth
-from homeassistant.config_entries import SOURCE_REAUTH, ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    SOURCE_REAUTH,
+    ConfigEntry,
+    ConfigEntryState,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
@@ -26,7 +34,14 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from .const import CONF_SITE_ID, CONF_SITE_TITLE, DISCOVERY_UNIQUE_ID, DOMAIN
+from .const import (
+    CONF_ALLOWED_DEVICES,
+    CONF_BLOCKED_DEVICES,
+    CONF_SITE_ID,
+    CONF_SITE_TITLE,
+    DISCOVERY_UNIQUE_ID,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,6 +63,12 @@ class PlejdBleConfigFlow(ConfigFlow, domain=DOMAIN):
     """Configuratiestroom voor Plejd BLE."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> PlejdBleOptionsFlow:
+        """Geef het optiesscherm van deze integratie."""
+        return PlejdBleOptionsFlow()
 
     def __init__(self) -> None:
         """Begin zonder gegevens."""
@@ -204,4 +225,48 @@ class PlejdBleConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_SITE_ID: site_id,
                 CONF_SITE_TITLE: title,
             },
+        )
+
+
+class PlejdBleOptionsFlow(OptionsFlow):
+    """Opties: welke apparaten mogen als Bluetooth-ingang dienen?"""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Laat de gebruiker de toegestane Bluetooth-ingangen kiezen."""
+        entry = self.config_entry
+        if entry.state is not ConfigEntryState.LOADED:
+            return self.async_abort(reason="not_loaded")
+        candidates = entry.runtime_data.gateway_candidates()
+        if not candidates:
+            return self.async_abort(reason="no_gateways")
+
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            allowed = user_input[CONF_ALLOWED_DEVICES]
+            if allowed:
+                blocked = [address for address in candidates if address not in allowed]
+                return self.async_create_entry(data={CONF_BLOCKED_DEVICES: blocked})
+            errors["base"] = "no_gateway"
+
+        blocked_now = set(entry.options.get(CONF_BLOCKED_DEVICES, []))
+        default = [address for address in candidates if address not in blocked_now]
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_ALLOWED_DEVICES, default=default): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(value=address, label=label)
+                                for address, label in candidates.items()
+                            ],
+                            multiple=True,
+                            mode=SelectSelectorMode.LIST,
+                        )
+                    )
+                }
+            ),
+            errors=errors,
         )

@@ -1,0 +1,14 @@
+{
+  "entity": {
+    "button": {
+      "refresh_cloud": {
+        "default": "mdi:cloud-refresh"
+      }
+    },
+    "sensor": {
+      "last_cloud_sync": {
+        "default": "mdi:cloud-check"
+      }
+    }
+  }
+}
