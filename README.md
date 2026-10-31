@@ -7,6 +7,7 @@
 [![Validate](https://github.com/TheGinji/ha-plejd-ble/actions/workflows/validate.yaml/badge.svg)](https://github.com/TheGinji/ha-plejd-ble/actions/workflows/validate.yaml)
 [![Licentie: MIT](https://img.shields.io/github/license/TheGinji/ha-plejd-ble)](LICENSE)
 [![Sterren](https://img.shields.io/github/stars/TheGinji/ha-plejd-ble?style=social)](https://github.com/TheGinji/ha-plejd-ble/stargazers)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-steun%20de%20maker-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/theginji)
 
 Home Assistant-integratie voor Plejd-verlichting via Bluetooth (BLE), gebouwd op [pyplejd](https://github.com/thomasloven/pyplejd). Je krijgt je lampen, relais, knoppen en bewegingssensoren in Home Assistant, zonder een berg extra entiteiten.
 
@@ -106,7 +107,7 @@ Wat we **niet** getest hebben: echte Bluetooth, echte Plejd-apparaten en Home As
 
 ## Steun
 
-Komt later.
+Dit project is gratis (MIT). Wil je de maker steunen, dan kan dat via [Ko-fi](https://ko-fi.com/theginji).
 
 ## Licentie en credits
 
