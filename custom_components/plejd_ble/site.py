@@ -22,7 +22,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import device_registry as dr, issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
@@ -31,6 +31,7 @@ from homeassistant.util import dt as dt_util
 from .const import (
     CACHE_STORE_VERSION,
     CLOUD_CACHE_MAX_AGE,
+    CONF_BLOCKED_DEVICES,
     CONF_SITE_ID,
     DOMAIN,
     MANUFACTURER,
@@ -96,6 +97,7 @@ class PlejdSite:
             password=entry.data[CONF_PASSWORD],
             siteId=entry.data[CONF_SITE_ID],
         )
+        self.manager.blacklist = entry.options.get(CONF_BLOCKED_DEVICES, [])
         self.devices: list[Any] = []
         self.names: dict[str, str] = {}
         self.cache_fetched_at: datetime | None = None
@@ -114,8 +116,12 @@ class PlejdSite:
                 cached.get("fetched_at") or ""
             )
 
+        refresh_requested = isinstance(cached, dict) and bool(
+            cached.get("refresh_requested")
+        )
         use_cache = (
             data is not None
+            and not refresh_requested
             and self.cache_fetched_at is not None
             and dt_util.utcnow() - self.cache_fetched_at < CLOUD_CACHE_MAX_AGE
         )
@@ -140,6 +146,27 @@ class PlejdSite:
             )
 
         self._build_devices()
+        self._update_cloud_issue()
+
+    @callback
+    def _update_cloud_issue(self) -> None:
+        """Meld het als de apparatenlijst al lang niet meer is ververst."""
+        issue_id = f"cloud_unreachable_{self.entry.entry_id}"
+        fresh = (
+            self.cache_fetched_at is not None
+            and dt_util.utcnow() - self.cache_fetched_at < CLOUD_CACHE_MAX_AGE
+        )
+        if fresh:
+            ir.async_delete_issue(self.hass, DOMAIN, issue_id)
+        else:
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                issue_id,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="cloud_unreachable",
+            )
 
     def _build_devices(self) -> None:
         """Bepaal welke apparaten we gebruiken en hoe ze heten."""
@@ -216,6 +243,45 @@ class PlejdSite:
             created[identifier] = registry.async_get_or_create(
                 config_entry_id=self.entry.entry_id, **info, **extra
             )
+
+    def hub_device_info(self) -> DeviceInfo:
+        """Beschrijf het apparaat voor de site zelf, met de knop en de sensor."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.entry.entry_id)},
+            name="Plejd BLE",
+            manufacturer=MANUFACTURER,
+            entry_type=dr.DeviceEntryType.SERVICE,
+        )
+
+    def gateway_candidates(self) -> dict[str, str]:
+        """Geef de apparaten op netstroom die als Bluetooth-ingang kunnen dienen.
+
+        De sleutel is het Bluetooth-adres zoals pyplejd het gebruikt, de waarde
+        een leesbare naam.
+        """
+        candidates: dict[str, str] = {}
+        for device in self.devices:
+            if not device.outputType or not device.powered:
+                continue
+            address = device.BLEaddress
+            is_primary = device.parent_identifier == device.device_identifier
+            if address in candidates and not is_primary:
+                continue
+            name = self.names[device.device_identifier]
+            candidates[address] = f"{name} ({device.room})" if device.room else name
+        return candidates
+
+    async def async_apply_options(self) -> None:
+        """Pas de gekozen Bluetooth-ingangen toe, zonder opnieuw te laden."""
+        blocked = self.entry.options.get(CONF_BLOCKED_DEVICES, [])
+        await self.manager.set_blacklist(blocked)
+
+    async def async_request_refresh(self) -> None:
+        """Haal de apparatenlijst opnieuw uit de cloud, met de oude als terugval."""
+        cached = await self._store.async_load()
+        if isinstance(cached, dict) and isinstance(cached.get("data"), dict):
+            await self._store.async_save({**cached, "refresh_requested": True})
+        self.hass.config_entries.async_schedule_reload(self.entry.entry_id)
 
     async def async_start(self) -> None:
         """Begin met Bluetooth: ontdek het mesh en houd de verbinding open."""
