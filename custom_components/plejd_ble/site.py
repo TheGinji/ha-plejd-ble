@@ -23,7 +23,13 @@ from pyplejd.cloud.site_details import SiteDetails
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
-from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
+from homeassistant.core import (
+    CALLBACK_TYPE,
+    CoreState,
+    Event,
+    HomeAssistant,
+    callback,
+)
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr, issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -125,7 +131,7 @@ class PlejdSite:
         self._connection_listeners: list[Callable[[], None]] = []
 
     async def async_load(self) -> None:
-        """Laad de sitegegevens: uit de cache als die vers is, anders uit de cloud."""
+        """Laad de sitegegevens: bij een herstart uit de bewaarde lijst, anders uit de cloud."""
         cached = await self._store.async_load()
         data: dict[str, Any] | None = None
         if isinstance(cached, dict) and isinstance(cached.get("data"), dict):
@@ -134,12 +140,14 @@ class PlejdSite:
                 cached.get("fetched_at") or ""
             )
 
-        refresh_requested = isinstance(cached, dict) and bool(
-            cached.get("refresh_requested")
-        )
+        # Bij een herstart van Home Assistant gebruiken we de bewaarde lijst, zodat
+        # de cloud zo weinig mogelijk wordt aangeroepen. Laadt iemand de integratie
+        # zelf opnieuw, dan draait Home Assistant al en willen we de nieuwste lijst,
+        # bijvoorbeeld na het toevoegen van een lamp in de Plejd-app.
+        starting_up = self.hass.state is not CoreState.running
         use_cache = (
             data is not None
-            and not refresh_requested
+            and starting_up
             and self.cache_fetched_at is not None
             and dt_util.utcnow() - self.cache_fetched_at < CLOUD_CACHE_MAX_AGE
         )
@@ -329,11 +337,12 @@ class PlejdSite:
         blocked = self.entry.options.get(CONF_BLOCKED_DEVICES, [])
         await self.manager.set_blacklist(blocked)
 
-    async def async_request_refresh(self) -> None:
-        """Haal de apparatenlijst opnieuw uit de cloud, met de oude als terugval."""
-        cached = await self._store.async_load()
-        if isinstance(cached, dict) and isinstance(cached.get("data"), dict):
-            await self._store.async_save({**cached, "refresh_requested": True})
+    @callback
+    def async_request_refresh(self) -> None:
+        """Laad de integratie opnieuw, zodat de apparatenlijst vers wordt opgehaald.
+
+        Lukt het ophalen niet, dan blijft de bewaarde lijst in gebruik.
+        """
         self.hass.config_entries.async_schedule_reload(self.entry.entry_id)
 
     async def async_start(self) -> None:

@@ -54,7 +54,7 @@ Talen: Nederlands en Engels. Er zijn ook Duitse en Franse teksten, maar die zijn
 
 **Opties.** Via de drie puntjes bij de integratie, onder **Configureren**, kies je welke apparaten op netstroom als Bluetooth-ingang mogen dienen. Haal een apparaat weg als het Bluetooth-signaal daar zwak of onstabiel is. Er moet er minstens één overblijven.
 
-Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebruikt om je apparatenlijst en de Bluetooth-sleutels op te halen, en die gegevens blijven zeven dagen lokaal bewaard. De bediening zelf loopt altijd via Bluetooth.
+Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebruikt om je apparatenlijst en de Bluetooth-sleutels op te halen. Bij een herstart van Home Assistant gebruikt de integratie de bewaarde lijst, als die hoogstens zeven dagen oud is. Laad je de integratie zelf opnieuw, of tik je op **Apparatenlijst verversen**, dan wordt de lijst vers opgehaald. De bediening zelf loopt altijd via Bluetooth.
 
 ## Wat je krijgt
 
@@ -80,7 +80,9 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bl
 
 **Alles is "niet beschikbaar".** Er is geen Bluetooth-verbinding met je Plejd-mesh. Controleer of de adapter of proxy binnen bereik is van een Plejd-apparaat dat op netstroom werkt. Heb je maar één zo'n apparaat, dan kan Home Assistant volgens de README van hass-plejd niet tegelijk met de Plejd-app of een GWY-01 verbinden.
 
-**Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het proberen met de knop **Apparatenlijst verversen**.
+**Een nieuwe of hernoemde lamp ontbreekt.** Je hebt hem in de Plejd-app toegevoegd of gewijzigd, maar Home Assistant gebruikte de bewaarde lijst. Tik op **Apparatenlijst verversen**, of laad de integratie opnieuw via de drie puntjes bij de integratie. Een herstart van Home Assistant is daarvoor niet genoeg.
+
+**Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het opnieuw proberen met de knop **Apparatenlijst verversen**.
 
 **Waarlangs ben ik verbonden?** Kijk bij de verbindingssensor: die toont de naam van het apparaat waarlangs Home Assistant op dat moment met het mesh verbonden is. Staat die sensor op uit, dan is er geen verbinding. Zie ook de lijst met apparaten en tijdstippen in de diagnostische gegevens.
 

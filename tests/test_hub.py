@@ -19,7 +19,7 @@ from homeassistant.util import dt as dt_util
 from custom_components.plejd_ble import async_remove_config_entry_device
 from custom_components.plejd_ble.const import DOMAIN
 
-from . import get_device_entry, get_entity_id, setup_integration
+from . import get_device_entry, get_entity_id, setup_entry, setup_integration
 from .conftest import ENTRY_ID, STORE_KEY
 
 ISSUE_ID = f"cloud_unreachable_{ENTRY_ID}"
@@ -43,10 +43,8 @@ async def test_refresh_button_fetches_a_new_device_list(
     mocks.cloud.assert_awaited_once()
     assert loaded_entry.state is ConfigEntryState.LOADED
     assert loaded_entry.runtime_data.used_cloud is True
-    saved = hass_storage[STORE_KEY]["data"]
-    fetched_at = dt_util.parse_datetime(saved["fetched_at"])
+    fetched_at = dt_util.parse_datetime(hass_storage[STORE_KEY]["data"]["fetched_at"])
     assert dt_util.utcnow() - fetched_at < timedelta(minutes=1)
-    assert "refresh_requested" not in saved
 
 
 async def test_refresh_keeps_the_old_list_when_the_cloud_is_down(
@@ -90,8 +88,7 @@ async def test_last_sync_sensor_shows_the_time_when_enabled(
     registry.async_get_or_create(
         "sensor", DOMAIN, f"{ENTRY_ID}:last_cloud_sync", config_entry=config_entry
     )
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
+    await setup_entry(hass, config_entry)
 
     state = hass.states.get(get_entity_id(hass, "sensor", f"{ENTRY_ID}:last_cloud_sync"))
     shown = dt_util.parse_datetime(state.state)
