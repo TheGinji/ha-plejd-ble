@@ -8,6 +8,7 @@ from typing import Any
 from pyplejd import DeviceTypes
 
 from homeassistant.components.sensor import (
+    RestoreSensor,
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
@@ -65,11 +66,15 @@ class PlejdLastCloudSync(SensorEntity):
         return self._site.cache_fetched_at
 
 
-class PlejdBatteryLevel(PlejdEntity, SensorEntity):
+class PlejdBatteryLevel(PlejdEntity, RestoreSensor):
     """Het batterijniveau van een bewegingssensor, zoals het apparaat het meldt.
 
     pyplejd beschrijft de waarde als "waarschijnlijk 0 tot 255". Omdat dat niet
     is bevestigd, tonen we de ruwe waarde en noemen we het geen percentage.
+
+    Een sensor meldt zijn batterij maar zelden. Daarom bewaren we de laatste
+    waarde over een herstart heen, en laten we hem ook zien als het mesh even
+    niet verbonden is.
     """
 
     _attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -83,9 +88,21 @@ class PlejdBatteryLevel(PlejdEntity, SensorEntity):
         self._battery: int | None = None
 
     @property
+    def available(self) -> bool:
+        """Toon het laatst bekende niveau, ook zonder Bluetooth-verbinding."""
+        return True
+
+    @property
     def native_value(self) -> int | None:
         """Geef het laatst gemelde niveau."""
         return self._battery
+
+    async def async_added_to_hass(self) -> None:
+        """Herstel het laatste niveau en luister daarna naar de sensor."""
+        last = await self.async_get_last_sensor_data()
+        if last is not None and last.native_value is not None:
+            self._battery = int(last.native_value)
+        await super().async_added_to_hass()
 
     @callback
     def _handle_device_update(self, data: dict[str, Any]) -> None:

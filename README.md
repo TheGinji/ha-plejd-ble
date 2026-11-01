@@ -60,13 +60,13 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 
 | Wat | In Home Assistant |
 | --- | --- |
-| Lamp of dimmer | `light`, met helderheid en, als de lamp het kan, kleurtemperatuur |
+| Lamp of dimmer | `light`, met helderheid en, als de lamp het kan, kleurtemperatuur. De laatst bekende kleurtemperatuur blijft bewaard na een herstart |
 | Relais | `switch` |
 | Knop op een paneel | `event` per knop, met `press` en `release` |
 | Bewegingssensor | `binary_sensor`, met het lichtniveau als extra gegeven |
 | Apparatenlijst verversen | `button`, haalt de lijst opnieuw uit de Plejd-cloud |
 | Verbinding met het mesh | `binary_sensor`, diagnostisch. Laat ook zien via welk apparaat je verbonden bent (`connected_via`) |
-| Batterijniveau | `sensor` bij bewegingssensoren, diagnostisch. De ruwe waarde van het apparaat, geen percentage |
+| Batterijniveau | `sensor` bij bewegingssensoren, diagnostisch. De ruwe waarde van het apparaat, geen percentage. De laatste waarde blijft bewaard, ook na een herstart en zonder verbinding |
 | Laatste cloud-synchronisatie | `sensor`, diagnostisch en standaard uit |
 | Laatst gezien en signaalsterkte | `sensor`, twee per apparaat op netstroom, diagnostisch en standaard uit |
 
@@ -74,7 +74,9 @@ Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het 
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
 
-De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bluetooth-melding van een apparaat op netstroom. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Na de hardwaretest kijken we of er een percentage van te maken is.
+Aan of uit en de helderheid vraagt Plejd BLE bij elke verbinding op. De kleurtemperatuur meldt Plejd alleen als hij verandert. Daarom bewaart Plejd BLE de laatst bekende waarde, ook als de lamp uit staat. Is de kleur in de tussentijd in de Plejd-app veranderd, dan klopt de waarde pas weer na de volgende wijziging.
+
+De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bluetooth-melding van een apparaat op netstroom. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Een sensor meldt zijn batterij zelden, dus de laatste waarde blijft staan tot er een nieuwe komt. Na de hardwaretest kijken we of er een percentage van te maken is.
 
 ## Problemen oplossen
 
