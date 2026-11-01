@@ -9,10 +9,11 @@ from types import SimpleNamespace
 from pytest_homeassistant_custom_component.common import (
     MockConfigEntry,
     async_fire_time_changed,
+    mock_restore_cache_with_extra_data,
 )
 
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.util import dt as dt_util
 
@@ -134,6 +135,43 @@ async def test_battery_level_is_a_separate_entity(
     push_state(get_device(loaded_entry, MOTION), battery=200)
 
     assert hass.states.get(entity_id).state == "200"
+
+
+async def test_battery_level_stays_visible_without_mesh(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Het laatst bekende niveau blijft zichtbaar als het mesh wegvalt."""
+    entity_id = get_entity_id(hass, "sensor", f"{MOTION}:battery")
+    push_state(get_device(loaded_entry, MOTION), battery=200)
+
+    for device in loaded_entry.runtime_data.devices:
+        device.set_available(False)
+    await hass.async_block_till_done()
+
+    assert hass.states.get(entity_id).state == "200"
+
+
+async def test_battery_level_is_restored_after_a_restart(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Na een herstart is het laatste niveau er meteen, tot er een nieuw komt."""
+    entity_id = get_entity_id(hass, "sensor", f"{MOTION}:battery")
+    assert await hass.config_entries.async_unload(loaded_entry.entry_id)
+    mock_restore_cache_with_extra_data(
+        hass,
+        (
+            (
+                State(entity_id, "180"),
+                {"native_value": 180, "native_unit_of_measurement": None},
+            ),
+        ),
+    )
+
+    await setup_entry(hass, loaded_entry)
+
+    assert hass.states.get(entity_id).state == "180"
+    push_state(get_device(loaded_entry, MOTION), battery=190)
+    assert hass.states.get(entity_id).state == "190"
 
 
 async def test_signal_sensors_exist_per_powered_unit_and_are_off(
