@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code ophalen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Hassfest draaien
         uses: home-assistant/actions/hassfest@master
