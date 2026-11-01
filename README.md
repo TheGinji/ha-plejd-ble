@@ -66,7 +66,7 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 | Bewegingssensor | `binary_sensor`, met het lichtniveau als extra gegeven |
 | Apparatenlijst verversen | `button`, haalt de lijst opnieuw uit de Plejd-cloud |
 | Verbinding met het mesh | `binary_sensor`, diagnostisch. Laat ook zien via welk apparaat je verbonden bent (`connected_via`) |
-| Batterijniveau | `sensor` bij bewegingssensoren, diagnostisch. De ruwe waarde van het apparaat, geen percentage |
+| Batterijniveau | `sensor` bij bewegingssensoren, diagnostisch. De ruwe waarde van het apparaat, geen percentage. De laatste waarde blijft bewaard, ook na een herstart en zonder verbinding |
 | Laatste cloud-synchronisatie | `sensor`, diagnostisch en standaard uit |
 | Laatst gezien en signaalsterkte | `sensor`, twee per apparaat op netstroom, diagnostisch en standaard uit |
 
@@ -74,7 +74,7 @@ Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het 
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
 
-De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bluetooth-melding van een apparaat op netstroom. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Na de hardwaretest kijken we of er een percentage van te maken is.
+De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bluetooth-melding van een apparaat op netstroom. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Een sensor meldt zijn batterij zelden, dus de laatste waarde blijft staan tot er een nieuwe komt. Na de hardwaretest kijken we of er een percentage van te maken is.
 
 ## Problemen oplossen
 
