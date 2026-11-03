@@ -17,15 +17,15 @@ In Home Assistant en HACS heet deze integratie **Plejd BLE (revised)**. De toevo
 >
 > **Testversie.** Het is getest met geautomatiseerde tests, maar nog niet op echte Plejd-apparaten. Zie [Kwaliteit](#kwaliteit).
 
-*English summary: Home Assistant integration for Plejd lighting over Bluetooth, built on pyplejd. It creates only lights, switches, button events and motion sensors, plus a few diagnostic entities: a refresh button, a Bluetooth connection sensor and a battery level for motion sensors. Per-device signal and last-seen sensors exist but are off by default. Unofficial, and tested with automated tests only so far, not yet on real hardware. It is a different integration than hass-plejd and the two cannot run at the same time.*
+*English summary: Home Assistant integration for Plejd lighting over Bluetooth, built on pyplejd. It creates only lights, switches, scenes, button events and motion sensors, plus a few diagnostic entities: a refresh button, a Bluetooth connection sensor and a battery level for motion sensors. Per-device signal and last-seen sensors exist but are off by default. Unofficial, and tested with automated tests only so far, not yet on real hardware. It is a different integration than hass-plejd and the two cannot run at the same time.*
 
 ## Is dit iets voor jou?
 
-Er bestaat al een bekende Plejd-integratie: [hass-plejd](https://github.com/thomasloven/hass-plejd). Die is ouder en breder: volgens zijn README ondersteunt hij meer apparaten, zoals scènes en thermostaten. Kies hem als je dat nodig hebt.
+Er bestaat al een bekende Plejd-integratie: [hass-plejd](https://github.com/thomasloven/hass-plejd). Die is ouder en breder: volgens zijn README ondersteunt hij meer apparaten, zoals thermostaten. Kies hem als je dat nodig hebt.
 
 Plejd BLE is voor jou als je vooral lampen, dimmers, relais, knoppen en bewegingssensoren hebt en een opgeruimde lijst met entiteiten wilt.
 
-Een voorbeeld, gemeten door de maker op één installatie met 31 apparaten, zonder Bluetooth-verbinding (het gaat dus om aantallen, niet om werking): hass-plejd had daar 225 actieve entiteiten. Dat zijn 18 lampen, 62 knop-events, 17 schakelaars voor de keuze van de Bluetooth-ingang, 62 binaire sensoren, 60 sensoren, 2 scènes en 4 scène-events. De binaire sensoren en sensoren zijn vooral diagnose, zoals verbinding, signaalsterkte en "laatst gezien". Plejd BLE had op dezelfde installatie 86 actieve entiteiten: de 18 lampen, de 62 knop-events, 2 bewegingssensoren en een paar diagnose-entiteiten (een verversknop, een verbindingssensor en het batterijniveau van de bewegingssensoren). Laatst gezien en signaalsterkte per apparaat bestaan ook, maar staan uit totdat je ze nodig hebt. Met alle diagnose aan zijn het er 121. Scènes maakt Plejd BLE niet aan, en de keuze van de Bluetooth-ingang zit in de opties in plaats van in losse schakelaars.
+Een voorbeeld, gemeten door de maker op één installatie met 31 apparaten, zonder Bluetooth-verbinding (het gaat dus om aantallen, niet om werking): hass-plejd had daar 225 actieve entiteiten. Dat zijn 18 lampen, 62 knop-events, 17 schakelaars voor de keuze van de Bluetooth-ingang, 62 binaire sensoren, 60 sensoren, 2 scènes en 4 scène-events. De binaire sensoren en sensoren zijn vooral diagnose, zoals verbinding, signaalsterkte en "laatst gezien". Plejd BLE (versie 0.2.2, nog zonder scènes) had op dezelfde installatie 86 actieve entiteiten: de 18 lampen, de 62 knop-events, 2 bewegingssensoren en een paar diagnose-entiteiten (een verversknop, een verbindingssensor en het batterijniveau van de bewegingssensoren). Laatst gezien en signaalsterkte per apparaat bestaan ook, maar staan uit totdat je ze nodig hebt. Met alle diagnose aan zijn het er 121. Sinds versie 0.2.3 komen daar de zichtbare Plejd-scènes bij. De keuze van de Bluetooth-ingang zit in de opties in plaats van in losse schakelaars.
 
 Ze kunnen **niet tegelijk** actief zijn, want een Plejd-apparaat houdt maar één Bluetooth-verbinding tegelijk vast.
 
@@ -62,6 +62,7 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 | --- | --- |
 | Lamp of dimmer | `light`, met helderheid en, als de lamp het kan, kleurtemperatuur. De laatst bekende kleurtemperatuur blijft bewaard na een herstart |
 | Relais | `switch` |
+| Scène | `scene`, activeert een scène uit de Plejd-app. Verborgen scènes worden overgeslagen |
 | Knop op een paneel | `event` per knop, met `press` en `release` |
 | Bewegingssensor | `binary_sensor`, met het lichtniveau als extra gegeven |
 | Apparatenlijst verversen | `button`, haalt de lijst opnieuw uit de Plejd-cloud |
@@ -73,6 +74,8 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het de productnaam van Plejd, bijvoorbeeld "Wireless push button". Van een model waarvan we de productnaam niet kennen, blijft het modelnummer over. Dezelfde naam in dezelfde kamer wordt genummerd. De kamer zet Home Assistant zelf voor de entiteit-ID, bijvoorbeeld `light.slaapkamer_1_plafondlicht`.
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
+
+Een scène activeren is één bericht aan het mesh, in plaats van één bericht per lamp. Wil je meerdere lampen zo gelijk mogelijk laten schakelen, maak dan in de Plejd-app een scène en gebruik die. Wat de scène doet, stel je daar in.
 
 Aan of uit en de helderheid vraagt Plejd BLE bij elke verbinding op. De kleurtemperatuur meldt Plejd alleen als hij verandert. Daarom bewaart Plejd BLE de laatst bekende waarde, ook als de lamp uit staat. Is de kleur in de tussentijd in de Plejd-app veranderd, dan klopt de waarde pas weer na de volgende wijziging.
 
@@ -105,7 +108,7 @@ Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat 
 
 ## Beperkingen
 
-- Alleen lampen, dimmers, relais, knoppen en bewegingssensoren. Scènes, thermostaten, jaloezieën en de draaiknop worden niet ondersteund.
+- Alleen lampen, dimmers, relais, scènes, knoppen en bewegingssensoren. Thermostaten, jaloezieën en de draaiknop worden niet ondersteund. Scènes kun je alleen activeren, aanmaken of wijzigen doe je in de Plejd-app.
 - Alleen Bluetooth. Er is geen terugval via de Plejd-cloud: de cloud wordt niet gebruikt om lampen te bedienen.
 - De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt. We weten niet of Plejd dat officieel ondersteunt.
 - Niet tegelijk met hass-plejd.

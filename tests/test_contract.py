@@ -13,6 +13,7 @@ from pyplejd.cloud import PlejdCloudSite
 from pyplejd.cloud.site_details import SiteDetails
 from pyplejd.interface.plejd_light import PlejdLight
 from pyplejd.interface.plejd_relay import PlejdRelay
+from pyplejd.interface.plejd_scene import PlejdScene
 
 from custom_components.plejd_ble.site import CachedCloudSite
 
@@ -69,3 +70,12 @@ def test_device_commands_are_unchanged() -> None:
     assert parameters(PlejdLight.turn_off) == ["self"]
     assert parameters(PlejdRelay.turn_on) == ["self"]
     assert parameters(PlejdRelay.turn_off) == ["self"]
+
+
+def test_scene_interface_is_unchanged() -> None:
+    """Een scène heeft nog de onderdelen waar wij op leunen."""
+    assert parameters(PlejdScene.__init__) == ["self", "scene", "index", "mesh"]
+    assert parameters(PlejdScene.activate) == ["self"]
+    assert inspect.iscoroutinefunction(PlejdScene.activate)
+    assert isinstance(PlejdScene.name, property)
+    assert isinstance(PlejdScene.hidden, property)

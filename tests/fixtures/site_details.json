@@ -55,6 +55,13 @@
       "sceneId": "scene-1",
       "siteId": "site-1",
       "title": "Avond"
+    },
+    {
+      "objectId": "scene-obj-2",
+      "sceneId": "scene-2",
+      "siteId": "site-1",
+      "title": "Nachtmodus",
+      "hiddenFromSceneList": true
     }
   ],
   "devices": [
@@ -396,7 +403,8 @@
   "outputGroups": {},
   "roomAddress": {},
   "sceneIndex": {
-    "scene-1": 1
+    "scene-1": 1,
+    "scene-2": 2
   },
   "deviceLimit": 100
 }

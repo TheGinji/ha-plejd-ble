@@ -132,6 +132,7 @@ async def test_only_useful_entities_are_created(
         "event",
         "binary_sensor",
         "button",
+        "scene",
         "sensor",
     }
 
