@@ -30,7 +30,11 @@ from homeassistant.core import (
     HomeAssistant,
     callback,
 )
-from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryNotReady,
+    HomeAssistantError,
+)
 from homeassistant.helpers import device_registry as dr, issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_time_interval
@@ -116,6 +120,7 @@ class PlejdSite:
         )
         self.manager.blacklist = entry.options.get(CONF_BLOCKED_DEVICES, [])
         self.devices: list[Any] = []
+        self.scenes: list[DeviceTypes.PlejdScene] = []
         self.names: dict[str, str] = {}
         self.cache_fetched_at: datetime | None = None
         self.used_cloud = False
@@ -195,12 +200,17 @@ class PlejdSite:
             )
 
     def _build_devices(self) -> None:
-        """Bepaal welke apparaten we gebruiken en hoe ze heten."""
+        """Bepaal welke apparaten en scènes we gebruiken en hoe de apparaten heten."""
         self.devices = [
             device
             for device in self.manager.devices
             if isinstance(device, DeviceTypes.PlejdDevice)
             and not device.deviceData.hiddenFromIntegrations
+        ]
+        self.scenes = [
+            scene
+            for scene in self.manager.devices
+            if isinstance(scene, DeviceTypes.PlejdScene) and not scene.hidden
         ]
         sources: dict[str, NameSource] = {}
         for device in self.devices:
@@ -215,6 +225,17 @@ class PlejdSite:
                     ),
                 )
         self.names = build_names(list(sources.values()))
+
+    def raise_if_not_connected(self) -> None:
+        """Geef een duidelijke fout als er geen Bluetooth-verbinding is.
+
+        pyplejd negeert opdrachten zonder verbinding stilletjes, dus dat
+        controleren we zelf.
+        """
+        if not self.manager.connected:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="not_connected"
+            )
 
     def devices_of_type(self, output_type: DeviceTypes.PlejdDeviceType) -> list[Any]:
         """Geef alle apparaten van een bepaald type."""

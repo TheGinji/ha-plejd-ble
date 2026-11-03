@@ -5,10 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.core import callback
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity import Entity
 
-from .const import DOMAIN
 from .site import PlejdSite
 
 
@@ -48,12 +46,5 @@ class PlejdEntity(Entity):
         """Laat subklassen op een wijziging reageren."""
 
     def _raise_if_not_connected(self) -> None:
-        """Geef een duidelijke fout als er geen Bluetooth-verbinding is.
-
-        pyplejd negeert opdrachten zonder verbinding stilletjes, dus dat
-        controleren we zelf.
-        """
-        if not self._site.manager.connected:
-            raise HomeAssistantError(
-                translation_domain=DOMAIN, translation_key="not_connected"
-            )
+        """Geef een duidelijke fout als er geen Bluetooth-verbinding is."""
+        self._site.raise_if_not_connected()
