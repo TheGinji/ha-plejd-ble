@@ -238,7 +238,8 @@ class PlejdBleOptionsFlow(OptionsFlow):
         entry = self.config_entry
         if entry.state is not ConfigEntryState.LOADED:
             return self.async_abort(reason="not_loaded")
-        candidates = entry.runtime_data.gateway_candidates()
+        site = entry.runtime_data
+        candidates = site.gateway_candidates()
         if not candidates:
             return self.async_abort(reason="no_gateways")
 
@@ -260,7 +261,7 @@ class PlejdBleOptionsFlow(OptionsFlow):
                         SelectSelectorConfig(
                             options=[
                                 SelectOptionDict(value=address, label=label)
-                                for address, label in candidates.items()
+                                for address, label in site.gateway_choices().items()
                             ],
                             multiple=True,
                             mode=SelectSelectorMode.LIST,

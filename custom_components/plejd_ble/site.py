@@ -51,6 +51,7 @@ from .const import (
     TIME_SYNC_INTERVAL,
 )
 from .naming import NameSource, build_names
+from .signal_quality import RSSI_SAMPLES, SIGNAL_MAX_AGE, signal_label
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -128,6 +129,7 @@ class PlejdSite:
         # Per Bluetooth-adres wat we zelf het laatst hebben gemeten. We gebruiken
         # niet het rssi-veld van pyplejd, want dat bewaart de sterkste waarde ooit.
         self.signal: dict[str, SignalReading] = {}
+        self._rssi_history: dict[str, deque[int]] = {}
         self.connection_events: deque[tuple[datetime, bool]] = deque(maxlen=20)
         self.ping_failures = 0
         self.last_ping_failure: datetime | None = None
@@ -328,6 +330,29 @@ class PlejdSite:
             candidates[address] = f"{name} ({device.room})" if device.room else name
         return candidates
 
+    def average_rssi(self, address: str) -> int | None:
+        """Geef het gemiddelde van de laatste metingen, of niets zonder recente meting."""
+        reading = self.signal.get(address)
+        history = self._rssi_history.get(address)
+        if (
+            reading is None
+            or not history
+            or dt_util.utcnow() - reading.seen_at > SIGNAL_MAX_AGE
+        ):
+            return None
+        return round(sum(history) / len(history))
+
+    def gateway_choices(self) -> dict[str, str]:
+        """Geef de Bluetooth-ingangen met hun signaalsterkte, voor het optiesscherm."""
+        names = self.gateway_candidates()
+        return {
+            address: (
+                f"{signal_label(self.average_rssi(device.ble_mac.upper()))}  "
+                f"{names[address]}"
+            )
+            for address, device in self.powered_units().items()
+        }
+
     def connected_via(self) -> str | None:
         """Geef de naam van het apparaat waarlangs we nu verbonden zijn.
 
@@ -445,8 +470,10 @@ class PlejdSite:
         connect: bool = True,
     ) -> None:
         """Geef een gevonden Plejd-apparaat door aan pyplejd en onthoud het signaal."""
-        self.signal[service_info.device.address.upper()] = SignalReading(
-            service_info.rssi, dt_util.utcnow()
+        address = service_info.device.address.upper()
+        self.signal[address] = SignalReading(service_info.rssi, dt_util.utcnow())
+        self._rssi_history.setdefault(address, deque(maxlen=RSSI_SAMPLES)).append(
+            service_info.rssi
         )
         is_new = self.manager.add_mesh_device(service_info.device, service_info.rssi)
         if connect and is_new and not self._stopping:
