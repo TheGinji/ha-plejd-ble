@@ -54,6 +54,8 @@ Talen: Nederlands en Engels. Er zijn ook Duitse en Franse teksten, maar die zijn
 
 **Opties.** Via de drie puntjes bij de integratie, onder **Configureren**, kies je welke apparaten op netstroom als Bluetooth-ingang mogen dienen. Haal een apparaat weg als het Bluetooth-signaal daar zwak of onstabiel is. Er moet er minstens één overblijven.
 
+Achter elk apparaat staat de signaalsterkte die Home Assistant op dat moment van het apparaat ontvangt, gemiddeld over de laatste tien metingen. 🟢 is goed (-65 dBm of beter), 🟠 is matig (tot -80 dBm), 🔴 is slecht (zwakker dan -80 dBm) en ⚪ betekent dat er geen recente meting is. Dat zijn vuistregels voor Bluetooth, geen waarden van Plejd. Het gaat om wat jouw Bluetooth-adapter of -proxy hoort, niet om wat de apparaten onderling hebben.
+
 Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebruikt om je apparatenlijst en de Bluetooth-sleutels op te halen. Bij een herstart van Home Assistant gebruikt de integratie de bewaarde lijst, als die hoogstens zeven dagen oud is. Laad je de integratie zelf opnieuw, of tik je op **Apparatenlijst verversen**, dan wordt de lijst vers opgehaald. De bediening zelf loopt altijd via Bluetooth.
 
 ## Wat je krijgt
