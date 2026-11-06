@@ -21,6 +21,7 @@ from custom_components.plejd_ble.const import DOMAIN
 from custom_components.plejd_ble.diagnostics import async_get_config_entry_diagnostics
 
 from . import (
+    CEILING_1,
     DIMMER,
     MOTION,
     NUMBER_OF_ENABLED_ENTITIES,
@@ -74,21 +75,27 @@ async def test_mesh_sensor_follows_the_connection(
 
 
 async def test_mesh_sensor_shows_the_active_gateway(
-    hass: HomeAssistant, loaded_entry: MockConfigEntry
+    hass: HomeAssistant, loaded_entry: MockConfigEntry, mocks: SimpleNamespace
 ) -> None:
-    """Het apparaat waarlangs we verbonden zijn, staat bij de sensor."""
+    """Het apparaat waarlangs we verbonden zijn, staat bij de sensor.
+
+    pyplejd laat de markering is_gateway staan op een apparaat waarlangs we eerder
+    verbonden waren. Daar mag de sensor zich niet door laten misleiden.
+    """
     entity_id = get_entity_id(hass, "binary_sensor", MESH_CONNECTED)
-    monitor = loaded_entry.runtime_data.manager.connection_monitor
+    manager = loaded_entry.runtime_data.manager
     dimmer = get_device(loaded_entry, DIMMER)
+    old_gateway = get_device(loaded_entry, CEILING_1)
     assert "connected_via" not in hass.states.get(entity_id).attributes
 
-    dimmer.hw.is_gateway = True
-    monitor(True)
+    old_gateway.hw.is_gateway = True
+    manager.mesh._gateway_node = SimpleNamespace(BLEaddress=dimmer.BLEaddress)
+    manager.connection_monitor(True)
     await hass.async_block_till_done()
     assert hass.states.get(entity_id).attributes["connected_via"] == "Zithoek (Woonkamer)"
 
-    dimmer.hw.is_gateway = False
-    monitor(True)
+    mocks.mesh.connected.return_value = False
+    manager.connection_monitor(False)
     await hass.async_block_till_done()
     assert "connected_via" not in hass.states.get(entity_id).attributes
 
