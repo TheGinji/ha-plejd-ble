@@ -248,21 +248,23 @@ class PlejdSite:
         """Geef alle apparaten van een bepaald type."""
         return [d for d in self.devices if d.outputType == output_type]
 
-    def device_info(self, device: Any) -> DeviceInfo:
-        """Beschrijf een apparaat voor het apparaatregister."""
-        info = DeviceInfo(
-            identifiers={(DOMAIN, device.device_identifier)},
-            name=self.names[device.device_identifier],
-            manufacturer=MANUFACTURER,
-            model=device.hardware,
-            suggested_area=device.room or None,
-            sw_version=str(device.firmware),
-        )
+    def device_registry_fields(self, device: Any) -> dict[str, Any]:
+        """Beschrijf een apparaat voor het apparaatregister, als gewone velden.
+
+        We gebruiken hier bewust geen DeviceInfo: dat is vanaf Home Assistant
+        2026.11 geen woordenboek meer en kan dus niet met ** worden uitgepakt.
+        """
+        fields: dict[str, Any] = {
+            "identifiers": {(DOMAIN, device.device_identifier)},
+            "name": self.names[device.device_identifier],
+            "manufacturer": MANUFACTURER,
+            "model": device.hardware,
+            "suggested_area": device.room or None,
+            "sw_version": str(device.firmware),
+        }
         if device.parent_identifier == device.device_identifier:
-            info["connections"] = {(dr.CONNECTION_BLUETOOTH, device.ble_mac)}
-        elif device.parent_identifier in self.names:
-            info["via_device"] = (DOMAIN, device.parent_identifier)
-        return info
+            fields["connections"] = {(dr.CONNECTION_BLUETOOTH, device.ble_mac)}
+        return fields
 
     def entity_device_info(self, device: Any) -> DeviceInfo:
         """Verwijs vanuit een entiteit naar het apparaat dat al is aangemaakt."""
@@ -286,16 +288,15 @@ class PlejdSite:
             identifier = device.device_identifier
             if identifier in created:
                 continue
-            info = self.device_info(device)
-            via_device = info.pop("via_device", None)
-            extra: dict[str, Any] = {}
-            if via_device is not None:
+            fields = self.device_registry_fields(device)
+            parent = device.parent_identifier
+            if parent != identifier and parent in self.names:
                 if uses_via_device_id:
-                    extra["via_device_id"] = created[via_device[1]].id
+                    fields["via_device_id"] = created[parent].id
                 else:
-                    extra["via_device"] = via_device
+                    fields["via_device"] = (DOMAIN, parent)
             created[identifier] = registry.async_get_or_create(
-                config_entry_id=self.entry.entry_id, **info, **extra
+                config_entry_id=self.entry.entry_id, **fields
             )
 
     def hub_device_info(self) -> DeviceInfo:
