@@ -5,6 +5,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
+from freezegun.api import FrozenDateTimeFactory
+
 from pyplejd.interface.plejd_scene import PlejdScene
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -61,3 +63,54 @@ async def test_scene_is_unavailable_without_connection(
     assert hass.states.get(entity_id).state == "unavailable"
     with pytest.raises(HomeAssistantError):
         await get_entity(hass, entity_id).async_activate()
+
+
+async def test_activation_from_the_mesh_is_recorded(
+    hass: HomeAssistant,
+    loaded_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """Activeert een schakelaar, de Plejd-app of een schema de scène, dan zien we dat."""
+    entity_id = get_entity_id(hass, "scene", VISIBLE_SCENE)
+    assert "last_triggered" not in hass.states.get(entity_id).attributes
+    freezer.move_to("2026-11-06T20:00:00+00:00")
+
+    scene = loaded_entry.runtime_data.scenes[0]
+    for listener in list(scene._listeners):
+        listener({"triggered": True})
+    await hass.async_block_till_done()
+
+    attributes = hass.states.get(entity_id).attributes
+    assert attributes["last_triggered"] == "2026-11-06T20:00:00+00:00"
+
+
+async def test_activation_from_home_assistant_is_recorded(
+    hass: HomeAssistant,
+    loaded_entry: MockConfigEntry,
+    freezer: FrozenDateTimeFactory,
+) -> None:
+    """Ook als Home Assistant de scène zelf activeert, staat het moment in het attribuut."""
+    entity_id = get_entity_id(hass, "scene", VISIBLE_SCENE)
+    freezer.move_to("2026-11-06T21:30:00+00:00")
+
+    with patch.object(PlejdScene, "activate", AsyncMock()):
+        await hass.services.async_call(
+            "scene", "turn_on", {"entity_id": entity_id}, blocking=True
+        )
+
+    attributes = hass.states.get(entity_id).attributes
+    assert attributes["last_triggered"] == "2026-11-06T21:30:00+00:00"
+
+
+async def test_other_scene_messages_do_not_count_as_activation(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Een bericht zonder activatie, zoals een beschikbaarheidsmelding, zet niets neer."""
+    entity_id = get_entity_id(hass, "scene", VISIBLE_SCENE)
+
+    scene = loaded_entry.runtime_data.scenes[0]
+    for listener in list(scene._listeners):
+        listener({"available": True})
+    await hass.async_block_till_done()
+
+    assert "last_triggered" not in hass.states.get(entity_id).attributes

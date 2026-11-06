@@ -53,6 +53,7 @@ def test_manager_interface_is_unchanged() -> None:
         "mesh",
     ):
         assert hasattr(manager, name), name
+    assert hasattr(manager.mesh, "_gateway_node")
     for name in (
         "init",
         "ping",
