@@ -7,9 +7,13 @@ from types import SimpleNamespace
 
 from freezegun.api import FrozenDateTimeFactory
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    async_fire_time_changed,
+)
 
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
 
 from custom_components.plejd_ble.signal_quality import signal_label
 
@@ -75,3 +79,21 @@ async def test_old_measurements_are_not_shown(
     freezer.tick(timedelta(minutes=16))
 
     assert site.average_rssi(DIMMER_ADDRESS) is None
+
+
+async def test_signal_is_refreshed_every_minute(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry, mocks: SimpleNamespace
+) -> None:
+    """Elke minuut vragen we het volgende bericht van elk apparaat op netstroom.
+
+    Home Assistant geeft berichten die gelijk zijn aan het vorige niet door. Zonder
+    deze vraag zouden de signaalsensoren op de eerste meting blijven staan.
+    """
+    mocks.bluetooth.clear_history.reset_mock()
+
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=61))
+    await hass.async_block_till_done()
+
+    cleared = {call.args[1] for call in mocks.bluetooth.clear_history.call_args_list}
+    assert len(cleared) == 5
+    assert DIMMER_ADDRESS in cleared
