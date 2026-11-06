@@ -63,12 +63,12 @@ class PlejdLight(PlejdEntity, LightEntity, RestoreEntity):
     @property
     def is_on(self) -> bool | None:
         """Geef aan of de lamp aan staat (onbekend tot de eerste status binnen is)."""
-        return self._data.get("state")
+        return self._value("state")
 
     @property
     def brightness(self) -> int | None:
         """Geef de helderheid van 0 tot 255."""
-        dim = self._data.get("dim")
+        dim = self._value("dim")
         if dim is None:
             return None
         return max(0, min(255, int(dim)))
@@ -103,9 +103,16 @@ class PlejdLight(PlejdEntity, LightEntity, RestoreEntity):
         kelvin = kwargs.get(ATTR_COLOR_TEMP_KELVIN)
         # pyplejd verwacht de kleurtemperatuur in mired en rekent zelf om.
         colortemp = 1e6 / kelvin if kelvin else None
-        await self._device.turn_on(kwargs.get(ATTR_BRIGHTNESS), colortemp)
+        brightness = kwargs.get(ATTR_BRIGHTNESS)
+        await self._device.turn_on(brightness, colortemp)
+        # De kleurtemperatuur nemen we nooit aan: die tonen we alleen als gemeld.
+        if brightness is None:
+            self._async_assume(state=True)
+        else:
+            self._async_assume(state=True, dim=brightness)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Zet de lamp uit."""
         self._raise_if_not_connected()
         await self._device.turn_off()
+        self._async_assume(state=False)

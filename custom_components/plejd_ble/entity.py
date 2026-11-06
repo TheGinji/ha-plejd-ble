@@ -2,16 +2,30 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
-from homeassistant.core import callback
+from homeassistant.core import CALLBACK_TYPE, callback
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.event import async_call_later
 
 from .site import PlejdSite
 
+# Zo lang tonen we wat we gevraagd hebben als het apparaat het niet bevestigt.
+ASSUMED_STATE_TIMEOUT = 5
+# Plejd rondt de helderheid soms af, dus zoveel verschil telt nog als bevestiging.
+ASSUMED_BRIGHTNESS_TOLERANCE = 3
+
 
 class PlejdEntity(Entity):
-    """Een entiteit die bij één Plejd-apparaat hoort."""
+    """Een entiteit die bij één Plejd-apparaat hoort.
+
+    Een apparaat meldt zijn nieuwe stand pas na ongeveer een seconde. Na een
+    opdracht tonen we daarom direct wat we gevraagd hebben (de aangenomen stand).
+    Zodra het apparaat dat bevestigt neemt de echte stand het weer over. Komt er
+    binnen enkele seconden geen bevestiging, dan vallen we terug op de laatst
+    gemelde stand, zodat de tegel nooit blijft liegen.
+    """
 
     _attr_has_entity_name = True
     _attr_should_poll = False
@@ -21,6 +35,8 @@ class PlejdEntity(Entity):
         self._site = site
         self._device = device
         self._data: dict[str, Any] = {}
+        self._assumed: dict[str, Any] = {}
+        self._cancel_assumed: CALLBACK_TYPE | None = None
         self._attr_unique_id = ":".join(device.identifier)
         self._attr_device_info = site.entity_device_info(device)
         self._attr_entity_registry_visible_default = not device.hidden
@@ -30,20 +46,74 @@ class PlejdEntity(Entity):
         """De entiteit is beschikbaar zolang het Bluetooth-mesh verbonden is."""
         return self._site.manager.connected
 
+    def _value(self, key: str) -> Any:
+        """Geef de waarde die we tonen: eerst de aangenomen stand, dan de gemelde."""
+        if key in self._assumed:
+            return self._assumed[key]
+        return self._data.get(key)
+
     async def async_added_to_hass(self) -> None:
         """Luister naar wijzigingen van het apparaat."""
         self.async_on_remove(self._device.subscribe(self._async_device_updated))
+        self.async_on_remove(self._clear_assumed_timer)
 
     @callback
     def _async_device_updated(self, data: dict[str, Any]) -> None:
         """Verwerk een nieuwe status van het apparaat."""
         self._data = data
+        if self._assumed and self._confirms_assumed(data):
+            self._clear_assumed()
         self._handle_device_update(data)
         self.async_write_ha_state()
 
     @callback
     def _handle_device_update(self, data: dict[str, Any]) -> None:
         """Laat subklassen op een wijziging reageren."""
+
+    def _confirms_assumed(self, data: dict[str, Any]) -> bool:
+        """Controleer of de melding van het apparaat is wat we gevraagd hebben."""
+        for key, wanted in self._assumed.items():
+            reported = data.get(key)
+            if reported is None:
+                return False
+            if key == "dim":
+                if abs(int(reported) - int(wanted)) > ASSUMED_BRIGHTNESS_TOLERANCE:
+                    return False
+            elif reported != wanted:
+                return False
+        return True
+
+    @callback
+    def _async_assume(self, **values: Any) -> None:
+        """Toon direct wat we gevraagd hebben, in afwachting van het apparaat."""
+        self._assumed = values
+        self._clear_assumed_timer()
+        self._cancel_assumed = async_call_later(
+            self.hass, ASSUMED_STATE_TIMEOUT, self._async_assumed_expired
+        )
+        self.async_write_ha_state()
+
+    @callback
+    def _async_assumed_expired(self, _now: datetime) -> None:
+        """Val terug op de gemelde stand als het apparaat niets bevestigde."""
+        self._cancel_assumed = None
+        self._assumed = {}
+        if self._site.manager.connected:
+            self._site.note_unconfirmed_command()
+        self.async_write_ha_state()
+
+    @callback
+    def _clear_assumed(self) -> None:
+        """Stop met de aangenomen stand."""
+        self._assumed = {}
+        self._clear_assumed_timer()
+
+    @callback
+    def _clear_assumed_timer(self) -> None:
+        """Annuleer de wachttijd, als die loopt."""
+        if self._cancel_assumed is not None:
+            self._cancel_assumed()
+            self._cancel_assumed = None
 
     def _raise_if_not_connected(self) -> None:
         """Geef een duidelijke fout als er geen Bluetooth-verbinding is."""

@@ -138,6 +138,8 @@ class PlejdSite:
         self.connection_events: deque[tuple[datetime, bool]] = deque(maxlen=20)
         self.ping_failures = 0
         self.last_ping_failure: datetime | None = None
+        self.unconfirmed_commands = 0
+        self.last_unconfirmed_command: datetime | None = None
         self._stopping = False
         self._unsubs: list[CALLBACK_TYPE] = []
         self._connection_listeners: list[Callable[[], None]] = []
@@ -362,14 +364,20 @@ class PlejdSite:
     def connected_via(self) -> str | None:
         """Geef de naam van het apparaat waarlangs we nu verbonden zijn.
 
-        pyplejd zet is_gateway aan op dat apparaat zodra de verbinding er is, en
-        weer uit als die wegvalt.
+        pyplejd wist de markering is_gateway niet als de verbinding naar een ander
+        apparaat wisselt, dus die kunnen we niet gebruiken. We vragen het aan de
+        verbinding zelf.
         """
-        candidates = self.gateway_candidates()
-        for address, device in self.powered_units().items():
-            if device.hw and device.hw.is_gateway:
-                return candidates[address]
-        return None
+        node = getattr(self.manager.mesh, "_gateway_node", None)
+        if node is None or not self.manager.connected:
+            return None
+        return self.gateway_candidates().get(node.BLEaddress)
+
+    @callback
+    def note_unconfirmed_command(self) -> None:
+        """Onthoud dat een apparaat een opdracht niet binnen enkele seconden bevestigde."""
+        self.unconfirmed_commands += 1
+        self.last_unconfirmed_command = dt_util.utcnow()
 
     @callback
     def async_add_connection_listener(

@@ -64,6 +64,14 @@ async def async_get_config_entry_diagnostics(
                 for moment, connected in site.connection_events
             ],
         },
+        "commands": {
+            "unconfirmed": site.unconfirmed_commands,
+            "last_unconfirmed": (
+                site.last_unconfirmed_command.isoformat()
+                if site.last_unconfirmed_command
+                else None
+            ),
+        },
         "cache": {
             "last_fetched": (
                 site.cache_fetched_at.isoformat() if site.cache_fetched_at else None

@@ -1,7 +1,7 @@
 # Plejd BLE (revised)
 
 [![HACS: aangepaste repository](https://img.shields.io/badge/HACS-aangepaste%20repository-orange.svg)](https://hacs.xyz/docs/faq/custom_repositories/)
-[![Home Assistant: getest op 2026.10](https://img.shields.io/badge/Home%20Assistant-getest%20op%202026.10-41BDF5.svg)](https://www.home-assistant.io/)
+[![Home Assistant: getest op 2026.10 en 2026.11](https://img.shields.io/badge/Home%20Assistant-getest%20op%202026.10%20en%202026.11-41BDF5.svg)](https://www.home-assistant.io/)
 [![Release](https://img.shields.io/github/v/release/TheGinji/ha-plejd-ble?include_prereleases)](https://github.com/TheGinji/ha-plejd-ble/releases)
 [![Tests](https://github.com/TheGinji/ha-plejd-ble/actions/workflows/tests.yaml/badge.svg)](https://github.com/TheGinji/ha-plejd-ble/actions/workflows/tests.yaml)
 [![Validate](https://github.com/TheGinji/ha-plejd-ble/actions/workflows/validate.yaml/badge.svg)](https://github.com/TheGinji/ha-plejd-ble/actions/workflows/validate.yaml)
@@ -15,9 +15,9 @@ In Home Assistant en HACS heet deze integratie **Plejd BLE (revised)**. De toevo
 
 > **Onofficieel.** Dit project is niet gemaakt, goedgekeurd of ondersteund door Plejd. Plejd is een merk van Plejd AB.
 >
-> **Testversie.** Het is getest met geautomatiseerde tests, maar nog niet op echte Plejd-apparaten. Zie [Kwaliteit](#kwaliteit).
+> **Testversie.** Het is getest met geautomatiseerde tests en op één echte installatie, maar nog niet op veel verschillende. Zie [Kwaliteit](#kwaliteit).
 
-*English summary: Home Assistant integration for Plejd lighting over Bluetooth, built on pyplejd. It creates only lights, switches, scenes, button events and motion sensors, plus a few diagnostic entities: a refresh button, a Bluetooth connection sensor and a battery level for motion sensors. Per-device signal and last-seen sensors exist but are off by default. Unofficial, and tested with automated tests only so far, not yet on real hardware. It is a different integration than hass-plejd and the two cannot run at the same time.*
+*English summary: Home Assistant integration for Plejd lighting over Bluetooth, built on pyplejd. It creates only lights, switches, scenes, button events and motion sensors, plus a few diagnostic entities: a refresh button, a Bluetooth connection sensor and a battery level for motion sensors. Per-device signal and last-seen sensors exist but are off by default. Unofficial, and tested with automated tests and on one real installation so far. It is a different integration than hass-plejd and the two cannot run at the same time.*
 
 ## Is dit iets voor jou?
 
@@ -42,7 +42,7 @@ Je hebt nodig:
 - Een Bluetooth-adapter in Home Assistant, of een [ESPHome Bluetooth-proxy](https://esphome.io/components/bluetooth_proxy.html) binnen bereik van je Plejd-apparaten.
 - Een account van de Plejd-app.
 
-Getest is alleen met Home Assistant 2026.10. Oudere versies zijn niet getest.
+Getest met Home Assistant 2026.10 en 2026.11. Oudere versies zijn niet getest.
 
 Talen: Nederlands en Engels. Er zijn ook Duitse en Franse teksten, maar die zijn met hulp van Claude vertaald en niet door een moedertaalspreker nagelezen.
 
@@ -77,7 +77,9 @@ Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het 
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
 
-Een scène activeren is één bericht aan het mesh, in plaats van één bericht per lamp. Wil je meerdere lampen zo gelijk mogelijk laten schakelen, maak dan in de Plejd-app een scène en gebruik die. Wat de scène doet, stel je daar in.
+Een scène activeren is één bericht aan het mesh, in plaats van één bericht per lamp. Wil je meerdere lampen zo gelijk mogelijk laten schakelen, maak dan in de Plejd-app een scène en gebruik die. Wat de scène doet, stel je daar in. Wordt een scène geactiveerd door een schakelaar, de Plejd-app of een schema, dan zet Plejd BLE dat in het attribuut `last_triggered` van de scène. Daar kun je een automatisering op laten reageren.
+
+Bedien je een lamp of een relais, dan toont Home Assistant direct de nieuwe stand. Een Plejd-apparaat meldt zijn stand zelf pas na ongeveer een seconde terug. Zodra het apparaat de nieuwe stand meldt, telt weer alleen wat het apparaat meldt. Komt er binnen vijf seconden geen melding, dan valt de tegel terug op de laatst gemelde stand. De kleurtemperatuur wordt nooit aangenomen: die zie je pas als het apparaat hem meldt.
 
 Aan of uit en de helderheid vraagt Plejd BLE bij elke verbinding op. De kleurtemperatuur meldt Plejd alleen als hij verandert. Daarom bewaart Plejd BLE de laatst bekende waarde, ook als de lamp uit staat. Is de kleur in de tussentijd in de Plejd-app veranderd, dan klopt de waarde pas weer na de volgende wijziging.
 
@@ -116,7 +118,7 @@ Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat 
 - Niet tegelijk met hass-plejd.
 - Er is geen beschikbaarheid per apparaat. Valt de verbinding met het mesh weg, dan worden alle entiteiten tegelijk niet beschikbaar. Wie dan precies niet bereikbaar is, zie je aan de sensoren voor laatst gezien.
 - Alles is gebouwd op pyplejd, dat door één persoon wordt onderhouden. We gebruiken één vaste versie en een test controleert of die nog past.
-- Nog niet getest op echte apparaten.
+- Getest op één installatie (31 apparaten, een Raspberry Pi met ingebouwde Bluetooth). Een ESPHome-proxy, plotselinge uitval van de adapter en andere Home Assistant-versies zijn niet getest.
 
 ## Verwijderen
 
@@ -129,8 +131,9 @@ Custom integrations hebben geen officiële kwaliteitsscore van Home Assistant. D
 - Meer dan 60 geautomatiseerde tests, met een dekking van minstens 95%. De workflow laat een run falen onder die grens.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) en de HACS-controle, zonder uitzonderingen. Beide draaien ook elke week.
 - Tests die controleren of de onderdelen van pyplejd die we gebruiken niet veranderen.
+- Een proef op één echte installatie: lampen, scènes, knoppen, bewegingssensoren, een herstart, het wisselen van Bluetooth-ingang, de signaalsensoren en gelijktijdig gebruik met de Plejd-app en een GWY-01.
 
-Wat we **niet** getest hebben: echte Bluetooth, echte Plejd-apparaten en Home Assistant-versies ouder dan 2026.10.
+Wat we **niet** getest hebben: een ESPHome-proxy, plotselinge uitval van de adapter, de kleurtemperatuur van lampen die dat kunnen en Home Assistant-versies ouder dan 2026.10.
 
 ## Steun
 
