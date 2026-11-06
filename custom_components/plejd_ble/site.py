@@ -37,7 +37,7 @@ from homeassistant.exceptions import (
 )
 from homeassistant.helpers import device_registry as dr, issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
@@ -61,6 +61,10 @@ from .signal_quality import (
 _LOGGER = logging.getLogger(__name__)
 
 type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
+
+# Na een mislukte verbindingspoging proberen we het na deze aantallen seconden
+# opnieuw. Daarna nemen de gewone controles, elke paar minuten, het over.
+RECONNECT_DELAYS = (10, 30, 60, 120)
 
 
 @dataclass(frozen=True)
@@ -140,6 +144,8 @@ class PlejdSite:
         self.last_ping_failure: datetime | None = None
         self.unconfirmed_commands = 0
         self.last_unconfirmed_command: datetime | None = None
+        self._failed_pings_in_a_row = 0
+        self._cancel_reconnect: CALLBACK_TYPE | None = None
         self._stopping = False
         self._unsubs: list[CALLBACK_TYPE] = []
         self._connection_listeners: list[Callable[[], None]] = []
@@ -463,6 +469,9 @@ class PlejdSite:
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()
+        if self._cancel_reconnect is not None:
+            self._cancel_reconnect()
+            self._cancel_reconnect = None
         await self.manager.disconnect()
 
     async def async_hass_stopping(self, _event: Event) -> None:
@@ -531,10 +540,43 @@ class PlejdSite:
         """Verbind met het mesh of houd de verbinding in leven."""
         if self._stopping or not self.started:
             return
-        if not await self.manager.ping():
-            self.ping_failures += 1
-            self.last_ping_failure = dt_util.utcnow()
-            _LOGGER.debug("Ping naar het Plejd-mesh mislukt")
+        if await self.manager.ping():
+            if self._failed_pings_in_a_row >= 2:
+                _LOGGER.info("De verbinding met het Plejd-mesh is hersteld")
+            self._failed_pings_in_a_row = 0
+            return
+        self.ping_failures += 1
+        self.last_ping_failure = dt_util.utcnow()
+        self._failed_pings_in_a_row += 1
+        _LOGGER.debug("Ping naar het Plejd-mesh mislukt")
+        if self._failed_pings_in_a_row == 2:
+            seen = sum(
+                1
+                for device in self.powered_units().values()
+                if device.ble_mac.upper() in self.signal
+            )
+            _LOGGER.warning(
+                "Geen verbinding met het Plejd-mesh. Home Assistant ziet %s van de %s "
+                "apparaten op netstroom. We blijven het proberen",
+                seen,
+                len(self.powered_units()),
+            )
+        self._schedule_reconnect()
+
+    @callback
+    def _schedule_reconnect(self) -> None:
+        """Probeer het snel opnieuw, met steeds iets langere pauzes."""
+        if self._cancel_reconnect is not None or self._stopping:
+            return
+        index = min(self._failed_pings_in_a_row, len(RECONNECT_DELAYS)) - 1
+        self._cancel_reconnect = async_call_later(
+            self.hass, RECONNECT_DELAYS[index], self._async_reconnect
+        )
+
+    async def _async_reconnect(self, _now: datetime) -> None:
+        """Doe de geplande nieuwe verbindingspoging."""
+        self._cancel_reconnect = None
+        await self._async_ping()
 
     async def _async_broadcast_time(self, *_: Any) -> None:
         """Controleer of de klok van het mesh klopt."""
