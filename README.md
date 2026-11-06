@@ -54,7 +54,7 @@ Talen: Nederlands en Engels. Er zijn ook Duitse en Franse teksten, maar die zijn
 
 **Opties.** Via de drie puntjes bij de integratie, onder **Configureren**, kies je welke apparaten op netstroom als Bluetooth-ingang mogen dienen. Haal een apparaat weg als het Bluetooth-signaal daar zwak of onstabiel is. Er moet er minstens één overblijven.
 
-Achter elk apparaat staat de signaalsterkte die Home Assistant op dat moment van het apparaat ontvangt, gemiddeld over de laatste tien metingen. 🟢 is goed (-65 dBm of beter), 🟠 is matig (tot -80 dBm), 🔴 is slecht (zwakker dan -80 dBm) en ⚪ betekent dat er geen recente meting is. Dat zijn vuistregels voor Bluetooth, geen waarden van Plejd. Het gaat om wat jouw Bluetooth-adapter of -proxy hoort, niet om wat de apparaten onderling hebben.
+Achter elk apparaat staat de signaalsterkte die Home Assistant op dat moment van het apparaat ontvangt, gemiddeld over de laatste tien metingen, ongeveer de laatste tien minuten. 🟢 is goed (-65 dBm of beter), 🟠 is matig (tot -80 dBm), 🔴 is slecht (zwakker dan -80 dBm) en ⚪ betekent dat er geen recente meting is. Dat zijn vuistregels voor Bluetooth, geen waarden van Plejd. Het gaat om wat jouw Bluetooth-adapter of -proxy hoort, niet om wat de apparaten onderling hebben.
 
 Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebruikt om je apparatenlijst en de Bluetooth-sleutels op te halen. Bij een herstart van Home Assistant gebruikt de integratie de bewaarde lijst, als die hoogstens zeven dagen oud is. Laad je de integratie zelf opnieuw, of tik je op **Apparatenlijst verversen**, dan wordt de lijst vers opgehaald. De bediening zelf loopt altijd via Bluetooth.
 
@@ -81,7 +81,7 @@ Een scène activeren is één bericht aan het mesh, in plaats van één bericht 
 
 Aan of uit en de helderheid vraagt Plejd BLE bij elke verbinding op. De kleurtemperatuur meldt Plejd alleen als hij verandert. Daarom bewaart Plejd BLE de laatst bekende waarde, ook als de lamp uit staat. Is de kleur in de tussentijd in de Plejd-app veranderd, dan klopt de waarde pas weer na de volgende wijziging.
 
-De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, bij elke Bluetooth-melding van een apparaat op netstroom. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Een sensor meldt zijn batterij zelden, dus de laatste waarde blijft staan tot er een nieuwe komt. Na de hardwaretest kijken we of er een percentage van te maken is.
+De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer per minuut, bij elk apparaat op netstroom. Home Assistant geeft een bericht dat gelijk is aan het vorige niet door en Plejd-apparaten sturen steeds hetzelfde, daarom vraagt Plejd BLE elke minuut om het volgende bericht. Laatst gezien is dus tot op de minuut nauwkeurig. Dat is bewust niet de waarde van pyplejd: die bewaart de sterkste waarde die ooit is gezien en zegt dus niets over nu. Apparaten op batterij melden zich zelden, dus daar is dit niet voor bedoeld. Het batterijniveau tonen we ruw, want pyplejd weet zelf niet zeker of de schaal 0 tot 255 is. Een sensor meldt zijn batterij zelden, dus de laatste waarde blijft staan tot er een nieuwe komt. Na de hardwaretest kijken we of er een percentage van te maken is.
 
 ## Problemen oplossen
 
