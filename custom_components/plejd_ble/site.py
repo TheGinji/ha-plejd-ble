@@ -51,7 +51,12 @@ from .const import (
     TIME_SYNC_INTERVAL,
 )
 from .naming import NameSource, build_names
-from .signal_quality import RSSI_SAMPLES, SIGNAL_MAX_AGE, signal_label
+from .signal_quality import (
+    RSSI_SAMPLES,
+    SIGNAL_MAX_AGE,
+    SIGNAL_REFRESH_INTERVAL,
+    signal_label,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -425,6 +430,14 @@ class PlejdSite:
                 name="Plejd BLE klok",
             )
         )
+        self._unsubs.append(
+            async_track_time_interval(
+                self.hass,
+                self._async_refresh_signal,
+                SIGNAL_REFRESH_INTERVAL,
+                name="Plejd BLE signaal",
+            )
+        )
         self.manager.connection_monitor = self._connection_monitor
         self.started = True
 
@@ -479,6 +492,19 @@ class PlejdSite:
         if connect and is_new and not self._stopping:
             self.entry.async_create_background_task(
                 self.hass, self._async_ping(), "plejd_ble nieuw apparaat gevonden"
+            )
+
+    @callback
+    def _async_refresh_signal(self, _now: datetime) -> None:
+        """Vraag Home Assistant om het volgende bericht van elk apparaat door te geven.
+
+        Home Assistant geeft een bericht dat precies gelijk is aan het vorige niet
+        door, en Plejd-apparaten sturen steeds hetzelfde. Zonder dit zouden we
+        alleen de allereerste meting van elk apparaat zien.
+        """
+        for device in self.powered_units().values():
+            bluetooth.async_clear_advertisement_history(
+                self.hass, device.ble_mac.upper()
             )
 
     def _connection_monitor(self, connected: bool) -> None:

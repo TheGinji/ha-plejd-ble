@@ -10,6 +10,9 @@ RSSI_SAMPLES = 10
 # Een meting die ouder is dan dit, tonen we niet meer als het huidige signaal.
 SIGNAL_MAX_AGE = timedelta(minutes=15)
 
+# Zo vaak vragen we Home Assistant om het volgende bericht van elk apparaat door te geven.
+SIGNAL_REFRESH_INTERVAL = timedelta(minutes=1)
+
 # Vuistregels voor Bluetooth in dBm, geen waarden van Plejd.
 GOOD_RSSI = -65
 FAIR_RSSI = -80
