@@ -76,12 +76,16 @@ def bluetooth_mock() -> Generator[SimpleNamespace]:
             "homeassistant.components.bluetooth.async_ble_device_from_address",
             return_value=None,
         ) as ble_device,
+        patch(
+            "homeassistant.components.bluetooth.async_clear_advertisement_history"
+        ) as clear_history,
     ):
         yield SimpleNamespace(
             scanner_count=scanner_count,
             register_callback=register_callback,
             discovered=discovered,
             ble_device=ble_device,
+            clear_history=clear_history,
         )
 
 
