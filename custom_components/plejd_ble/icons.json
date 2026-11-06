@@ -14,6 +14,9 @@
       }
     },
     "sensor": {
+      "connected_via": {
+        "default": "mdi:bluetooth-connect"
+      },
       "battery_level": {
         "default": "mdi:battery-unknown"
       },

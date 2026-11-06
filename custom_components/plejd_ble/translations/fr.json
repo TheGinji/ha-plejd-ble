@@ -87,6 +87,9 @@
       },
       "signal_strength": {
         "name": "Force du signal"
+      },
+      "connected_via": {
+        "name": "Connecté via"
       }
     },
     "binary_sensor": {
