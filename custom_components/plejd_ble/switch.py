@@ -37,14 +37,16 @@ class PlejdSwitch(PlejdEntity, SwitchEntity):
     @property
     def is_on(self) -> bool | None:
         """Geef aan of het relais aan staat."""
-        return self._data.get("state")
+        return self._value("state")
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Zet het relais aan."""
         self._raise_if_not_connected()
         await self._device.turn_on()
+        self._async_assume(state=True)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Zet het relais uit."""
         self._raise_if_not_connected()
         await self._device.turn_off()
+        self._async_assume(state=False)
