@@ -1,4 +1,4 @@
-"""Sensoren: cloudsynchronisatie, batterijniveau en per apparaat signaal en laatst gezien."""
+"""Sensoren: cloudsynchronisatie, verbonden via, batterijniveau en per apparaat signaal."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ async def async_setup_entry(
 ) -> None:
     """Maak de sensoren voor de site, de bewegingssensoren en de apparaten op netstroom."""
     site = entry.runtime_data
-    entities: list[SensorEntity] = [PlejdLastCloudSync(site)]
+    entities: list[SensorEntity] = [PlejdLastCloudSync(site), PlejdConnectedVia(site)]
     entities.extend(
         PlejdBatteryLevel(site, device)
         for device in site.devices_of_type(DeviceTypes.PlejdDeviceType.MOTION)
@@ -64,6 +64,32 @@ class PlejdLastCloudSync(SensorEntity):
     def native_value(self) -> datetime | None:
         """Geef het tijdstip, of niets als er nog niets is opgehaald."""
         return self._site.cache_fetched_at
+
+
+class PlejdConnectedVia(SensorEntity):
+    """Het apparaat waarlangs Home Assistant nu met het mesh verbonden is."""
+
+    _attr_has_entity_name = True
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_should_poll = False
+    _attr_translation_key = "connected_via"
+
+    def __init__(self, site: PlejdSite) -> None:
+        """Koppel de sensor aan de site."""
+        self._site = site
+        self._attr_unique_id = f"{site.entry.entry_id}:connected_via"
+        self._attr_device_info = site.hub_device_info()
+
+    @property
+    def native_value(self) -> str | None:
+        """Geef de naam van het apparaat, of niets zonder verbinding."""
+        return self._site.connected_via()
+
+    async def async_added_to_hass(self) -> None:
+        """Werk bij zodra de verbinding verandert."""
+        self.async_on_remove(
+            self._site.async_add_connection_listener(self.async_write_ha_state)
+        )
 
 
 class PlejdBatteryLevel(PlejdEntity, RestoreSensor):

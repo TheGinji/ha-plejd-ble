@@ -69,6 +69,7 @@ Je wachtwoord wordt in Home Assistant bewaard. De Plejd-cloud wordt alleen gebru
 | Bewegingssensor | `binary_sensor`, met het lichtniveau als extra gegeven |
 | Apparatenlijst verversen | `button`, haalt de lijst opnieuw uit de Plejd-cloud |
 | Verbinding met het mesh | `binary_sensor`, diagnostisch. Laat ook zien via welk apparaat je verbonden bent (`connected_via`) |
+| Verbonden via | `sensor`, diagnostisch. De naam van het apparaat waarlangs je nu met het mesh verbonden bent, of onbekend zonder verbinding |
 | Batterijniveau | `sensor` bij bewegingssensoren, diagnostisch. De ruwe waarde van het apparaat, geen percentage. De laatste waarde blijft bewaard, ook na een herstart en zonder verbinding |
 | Laatste cloud-synchronisatie | `sensor`, diagnostisch en standaard uit |
 | Laatst gezien en signaalsterkte | `sensor`, twee per apparaat op netstroom, diagnostisch en standaard uit |
@@ -93,7 +94,9 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer 
 
 **Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het opnieuw proberen met de knop **Apparatenlijst verversen**.
 
-**Waarlangs ben ik verbonden?** Kijk bij de verbindingssensor: die toont de naam van het apparaat waarlangs Home Assistant op dat moment met het mesh verbonden is. Staat die sensor op uit, dan is er geen verbinding. Zie ook de lijst met apparaten en tijdstippen in de diagnostische gegevens.
+**Waarlangs ben ik verbonden?** Kijk bij de sensor **Verbonden via** onder het apparaat Plejd BLE, bij Diagnostiek. Die toont de naam van het apparaat waarlangs Home Assistant op dat moment met het mesh verbonden is. Staat de verbindingssensor op uit, dan is er geen verbinding. Zie ook de lijst met apparaten en tijdstippen in de diagnostische gegevens.
+
+**Na een herstart werkt niets.** Lukt de eerste verbinding niet, dan probeert Plejd BLE het na 10, 30, 60 en 120 seconden opnieuw, en daarna elke paar minuten. Na twee mislukte pogingen staat er één waarschuwing in het logboek, met het aantal apparaten dat Home Assistant ziet. Hoort Home Assistant er geen enkel apparaat, dan zit het probleem bij de Bluetooth-adapter of -proxy.
 
 **De inlog wordt geweigerd.** Home Assistant vraagt dan zelf om opnieuw in te loggen. Je kunt de inlog ook wijzigen via de drie puntjes bij de integratie, onder **Opnieuw configureren**.
 

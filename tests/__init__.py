@@ -22,11 +22,11 @@ RELAY_B = "A0B1C2000005:O:1"  # Tuinlamp
 BUTTON_DEVICE = "A0B1C2000006:I:0"  # Knop 1 van het paneel
 BUTTON_ENTITY = f"{BUTTON_DEVICE}:press"
 MOTION = "A0B1C2000007:I:0"  # Bewegingssensor
-# 11 apparaten, de verversknop, de cloudsensor, de verbindingssensor, het batterijniveau,
-# de ene zichtbare scène en per apparaat op netstroom (5) een laatst-gezien- en een
-# signaalsensor.
-NUMBER_OF_ENTITIES = 26
-NUMBER_OF_ENABLED_ENTITIES = 15  # alles behalve de cloudsensor en die 10 sensoren
+# 11 apparaten, de verversknop, de cloudsensor, de verbindingssensor, verbonden via,
+# het batterijniveau, de ene zichtbare scène en per apparaat op netstroom (5) een
+# laatst-gezien- en een signaalsensor.
+NUMBER_OF_ENTITIES = 27
+NUMBER_OF_ENABLED_ENTITIES = 16  # alles behalve de cloudsensor en die 10 sensoren
 
 
 async def setup_entry(hass: HomeAssistant, entry: MockConfigEntry) -> None:
