@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import time
 from typing import Any
 
 from homeassistant.core import CALLBACK_TYPE, callback
@@ -37,6 +38,8 @@ class PlejdEntity(Entity):
         self._data: dict[str, Any] = {}
         self._assumed: dict[str, Any] = {}
         self._cancel_assumed: CALLBACK_TYPE | None = None
+        self._assumed_at = 0.0
+        self._assumed_unchanged = False
         self._attr_unique_id = ":".join(device.identifier)
         self._attr_device_info = site.entity_device_info(device)
         self._attr_entity_registry_visible_default = not device.hidden
@@ -62,6 +65,7 @@ class PlejdEntity(Entity):
         """Verwerk een nieuwe status van het apparaat."""
         self._data = data
         if self._assumed and self._confirms_assumed(data):
+            self._site.note_confirmed_command(time.monotonic() - self._assumed_at)
             self._clear_assumed()
         self._handle_device_update(data)
         self.async_write_ha_state()
@@ -86,7 +90,13 @@ class PlejdEntity(Entity):
     @callback
     def _async_assume(self, **values: Any) -> None:
         """Toon direct wat we gevraagd hebben, in afwachting van het apparaat."""
+        if self._cancel_assumed is not None:
+            self._site.note_superseded_command()
+        self._site.note_command()
         self._assumed = values
+        # Stond de lamp al zo, dan meldt het apparaat misschien niets. Dat is geen fout.
+        self._assumed_unchanged = self._confirms_assumed(self._data)
+        self._assumed_at = time.monotonic()
         self._clear_assumed_timer()
         self._cancel_assumed = async_call_later(
             self.hass, ASSUMED_STATE_TIMEOUT, self._async_assumed_expired
@@ -99,7 +109,10 @@ class PlejdEntity(Entity):
         self._cancel_assumed = None
         self._assumed = {}
         if self._site.manager.connected:
-            self._site.note_unconfirmed_command()
+            if self._assumed_unchanged:
+                self._site.note_unchanged_command()
+            else:
+                self._site.note_unconfirmed_command()
         self.async_write_ha_state()
 
     @callback

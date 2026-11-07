@@ -69,7 +69,15 @@ async def async_get_config_entry_diagnostics(
             "last": site.last_settle.isoformat() if site.last_settle else None,
         },
         "commands": {
+            "sent": site.commands_sent,
+            "confirmed": site.commands_confirmed,
             "unconfirmed": site.unconfirmed_commands,
+            "unchanged": site.commands_unchanged,
+            "superseded": site.commands_superseded,
+            "confirm_seconds_avg": site.average_confirm_seconds,
+            "confirm_seconds_max": (
+                round(site.confirm_seconds_max, 2) if site.commands_confirmed else None
+            ),
             "last_unconfirmed": (
                 site.last_unconfirmed_command.isoformat()
                 if site.last_unconfirmed_command
