@@ -117,7 +117,7 @@ Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat 
 
 - Alleen lampen, dimmers, relais, scènes, knoppen en bewegingssensoren. Thermostaten, jaloezieën en de draaiknop worden niet ondersteund. Scènes kun je alleen activeren, aanmaken of wijzigen doe je in de Plejd-app.
 - Alleen Bluetooth. Er is geen terugval via de Plejd-cloud: de cloud wordt niet gebruikt om lampen te bedienen.
-- De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt. We weten niet of Plejd dat officiîl ondersteunt.
+- De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt. We weten niet of Plejd dat officieel ondersteunt.
 - Niet tegelijk met hass-plejd.
 - Er is geen beschikbaarheid per apparaat. Valt de verbinding met het mesh weg, dan worden alle entiteiten tegelijk niet beschikbaar. Wie dan precies niet bereikbaar is, zie je aan de sensoren voor laatst gezien.
 - Alles is gebouwd op pyplejd, dat door één persoon wordt onderhouden. We gebruiken één vaste versie en een test controleert of die nog past.
