@@ -64,6 +64,10 @@ async def async_get_config_entry_diagnostics(
                 for moment, connected in site.connection_events
             ],
         },
+        "settle": {
+            "units": site.settled_units,
+            "last": site.last_settle.isoformat() if site.last_settle else None,
+        },
         "commands": {
             "unconfirmed": site.unconfirmed_commands,
             "last_unconfirmed": (
