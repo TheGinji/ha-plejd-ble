@@ -145,6 +145,12 @@ class PlejdSite:
         self.last_ping_failure: datetime | None = None
         self.unconfirmed_commands = 0
         self.last_unconfirmed_command: datetime | None = None
+        self.commands_sent = 0
+        self.commands_confirmed = 0
+        self.commands_unchanged = 0
+        self.commands_superseded = 0
+        self.confirm_seconds_total = 0.0
+        self.confirm_seconds_max = 0.0
         self._failed_pings_in_a_row = 0
         self._cancel_reconnect: CALLBACK_TYPE | None = None
         # Apparaten waarmee we al een tweede keer verbonden zijn, zie _async_settle_connection.
@@ -385,10 +391,39 @@ class PlejdSite:
         return self.gateway_candidates().get(node.BLEaddress)
 
     @callback
+    def note_command(self) -> None:
+        """Onthoud dat we een opdracht naar een apparaat hebben gestuurd."""
+        self.commands_sent += 1
+
+    @callback
+    def note_confirmed_command(self, seconds: float) -> None:
+        """Onthoud dat een apparaat een opdracht bevestigde, en hoe lang dat duurde."""
+        self.commands_confirmed += 1
+        self.confirm_seconds_total += seconds
+        self.confirm_seconds_max = max(self.confirm_seconds_max, seconds)
+
+    @callback
+    def note_superseded_command(self) -> None:
+        """Onthoud dat een nieuwe opdracht kwam voordat de vorige bevestigd was."""
+        self.commands_superseded += 1
+
+    @callback
+    def note_unchanged_command(self) -> None:
+        """Onthoud dat een opdracht niets veranderde en het apparaat dus zweeg."""
+        self.commands_unchanged += 1
+
+    @callback
     def note_unconfirmed_command(self) -> None:
         """Onthoud dat een apparaat een opdracht niet binnen enkele seconden bevestigde."""
         self.unconfirmed_commands += 1
         self.last_unconfirmed_command = dt_util.utcnow()
+
+    @property
+    def average_confirm_seconds(self) -> float | None:
+        """Geef de gemiddelde tijd tot een bevestiging, of niets zonder bevestigingen."""
+        if not self.commands_confirmed:
+            return None
+        return round(self.confirm_seconds_total / self.commands_confirmed, 2)
 
     @callback
     def async_add_connection_listener(
@@ -555,6 +590,8 @@ class PlejdSite:
         self.last_ping_failure = dt_util.utcnow()
         self._failed_pings_in_a_row += 1
         _LOGGER.debug("Ping naar het Plejd-mesh mislukt")
+        if self.manager.connected:
+            await self._async_drop_dead_connection()
         if self._failed_pings_in_a_row == 2:
             seen = sum(
                 1
@@ -568,6 +605,19 @@ class PlejdSite:
                 len(self.powered_units()),
             )
         self._schedule_reconnect()
+
+    async def _async_drop_dead_connection(self) -> None:
+        """Verbreek een verbinding die open lijkt, maar niet meer antwoordt.
+
+        pyplejd merkt niet als de verbinding wegvalt: het blijft denken dat hij open
+        staat en probeert nooit opnieuw. Door hem zelf te verbreken, maakt de
+        verbindingsbewaking meteen een nieuwe.
+        """
+        _LOGGER.warning(
+            "De Bluetooth-verbinding met %s reageert niet meer. We maken hem opnieuw",
+            self.connected_via() or "het Plejd-mesh",
+        )
+        await self.manager.disconnect()
 
     @property
     def settled_units(self) -> int:
@@ -620,7 +670,7 @@ class PlejdSite:
         """Probeer het snel opnieuw, met steeds iets langere pauzes."""
         if self._cancel_reconnect is not None or self._stopping:
             return
-        index = min(self._failed_pings_in_a_row, len(RECONNECT_DELAYS)) - 1
+        index = max(min(self._failed_pings_in_a_row, len(RECONNECT_DELAYS)), 1) - 1
         self._cancel_reconnect = async_call_later(
             self.hass, RECONNECT_DELAYS[index], self._async_reconnect
         )

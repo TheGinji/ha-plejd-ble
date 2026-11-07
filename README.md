@@ -98,11 +98,13 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer 
 
 **Na een herstart werkt niets.** Lukt de eerste verbinding niet, dan probeert Plejd BLE het na 10, 30, 60 en 120 seconden opnieuw, en daarna elke paar minuten. Na twee mislukte pogingen staat er één waarschuwing in het logboek, met het aantal apparaten dat Home Assistant ziet. Hoort Home Assistant er geen enkel apparaat, dan zit het probleem bij de Bluetooth-adapter of -proxy.
 
+De eerste keer dat Plejd BLE na een start met een apparaat verbindt, maakt het die verbinding meteen een tweede keer, met hetzelfde apparaat. Op de installatie van de maker gaf de eerste verbinding geen opdrachten door aan de andere lampen en de tweede wel. De lampen zijn daarbij één keer per apparaat een paar seconden niet beschikbaar. Staat een verbinding open maar antwoordt hij niet meer, dan wordt hij verbroken en opnieuw gemaakt, met een waarschuwing in het logboek.
+
 **De inlog wordt geweigerd.** Home Assistant vraagt dan zelf om opnieuw in te loggen. Je kunt de inlog ook wijzigen via de drie puntjes bij de integratie, onder **Opnieuw configureren**.
 
 **Een knop of lamp doet niets.** Controleer eerst of het werkt in de Plejd-app op je telefoon, via Bluetooth, in de buurt van de lampen. Werkt het daar niet, dan zit het probleem niet in deze integratie.
 
-**Een fout melden.** Gebruik de [formulieren](https://github.com/TheGinji/ha-plejd-ble/issues/new/choose). Voeg het bestand toe via **Diagnostische gegevens downloaden** bij de integratie. Dat bevat geen namen, adressen, wachtwoorden of sleutels. Meer logboek krijg je zo:
+**Een fout melden.** Gebruik de [formulieren](https://github.com/TheGinji/ha-plejd-ble/issues/new/choose). Voeg het bestand toe via **Diagnostische gegevens downloaden** bij de integratie. Dat bevat geen namen, adressen, wachtwoorden of sleutels. Het laat wel zien hoeveel opdrachten een apparaat bevestigde en hoe lang dat duurde. Meer logboek krijg je zo:
 
 ```yaml
 logger:
