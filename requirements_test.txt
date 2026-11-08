@@ -1,2 +1,2 @@
 pytest-homeassistant-custom-component
-pyplejd==0.22.0
+pyplejd==0.22.1
