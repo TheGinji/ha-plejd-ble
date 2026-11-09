@@ -42,7 +42,7 @@ Je hebt nodig:
 - Een Bluetooth-adapter in Home Assistant, of een [ESPHome Bluetooth-proxy](https://esphome.io/components/bluetooth_proxy.html) binnen bereik van je Plejd-apparaten.
 - Een account van de Plejd-app.
 
-Getest met Home Assistant 2026.10 en 2026.11. Oudere versies zijn niet getest.
+Vereist Home Assistant 2026.10 of nieuwer. HACS controleert dat bij het installeren. Getest met 2026.10 en 2026.11.
 
 Talen: Nederlands en Engels. Er zijn ook Duitse en Franse teksten, maar die zijn met hulp van Claude vertaald en niet door een moedertaalspreker nagelezen.
 
@@ -146,6 +146,7 @@ Verwijder de integratie via **Instellingen → Apparaten en diensten**. De lokaa
 Custom integrations hebben geen officiële kwaliteitsscore van Home Assistant. Dit hebben we zelf getoetst:
 
 - Meer dan 60 geautomatiseerde tests, met een dekking van minstens 95%. De workflow laat een run falen onder die grens.
+- De tests draaien bij elke wijziging en elke week op de nieuwste Home Assistant, en ook op de oudste ondersteunde versie. Een extra proef op de komende bètaversie waarschuwt eerder voor wijzigingen, maar blokkeert niets.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) en de HACS-controle, zonder uitzonderingen. Beide draaien ook elke week.
 - Tests die controleren of de onderdelen van pyplejd die we gebruiken niet veranderen.
 - Een proef op één echte installatie, zie hieronder.
@@ -163,7 +164,7 @@ De installatie van de maker: 31 apparaten, een Raspberry Pi met ingebouwde Bluet
 - Ruim 20 uur zonder één mislukte keep-alive, ook 's nachts.
 - De signaalsensoren en laatst gezien.
 
-**Nog niet getest:** een ESPHome-proxy, plotseling loskoppelen van de adapter, de kleurtemperatuur van lampen die dat kunnen, andere installaties en Home Assistant-versies ouder dan 2026.10.
+**Nog niet getest:** een ESPHome-proxy, plotseling loskoppelen van de adapter, de kleurtemperatuur van lampen die dat kunnen en andere installaties.
 
 ## Steun
 
