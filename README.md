@@ -78,7 +78,16 @@ Namen komen uit de Plejd-app. Heeft een apparaat daar geen naam, dan krijgt het 
 
 Apparaten die Plejd als verborgen voor integraties markeert, worden overgeslagen.
 
-Een scène activeren is één bericht aan het mesh, in plaats van één bericht per lamp. Wil je meerdere lampen zo gelijk mogelijk laten schakelen, maak dan in de Plejd-app een scène en gebruik die. Wat de scène doet, stel je daar in. Wordt een scène geactiveerd door een schakelaar, de Plejd-app of een schema, dan zet Plejd BLE dat in het attribuut `last_triggered` van de scène. Daar kun je een automatisering op laten reageren.
+Een scène activeren is één bericht aan het mesh, in plaats van één bericht per lamp. Wil je meerdere lampen zo gelijk mogelijk laten schakelen, maak dan in de Plejd-app een scène en gebruik die. Wat de scène doet, stel je daar in. Wordt een scène geactiveerd door een schakelaar, de Plejd-app of een schema, dan zet Plejd BLE dat in het attribuut `last_triggered` van de scène. Een automatisering kan daarop reageren met een statustrigger op dat attribuut:
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: scene.avond_schakelaars
+    attribute: last_triggered
+```
+
+Dat gebeurt ook als Home Assistant zelf de scène activeert. Laat een automatisering dus niet dezelfde scène activeren waarop hij triggert, anders loopt hij vast in een lus. Een wijziging van alleen een attribuut komt niet in het logboek of de historie van de scène.
 
 Bedien je een lamp of een relais, dan toont Home Assistant direct de nieuwe stand. Een Plejd-apparaat meldt zijn stand zelf pas na ongeveer een seconde terug. Zodra het apparaat de nieuwe stand meldt, telt weer alleen wat het apparaat meldt. Komt er binnen vijf seconden geen melding, dan valt de tegel terug op de laatst gemelde stand. De kleurtemperatuur wordt nooit aangenomen: die zie je pas als het apparaat hem meldt.
 
@@ -90,7 +99,7 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer 
 
 **Alles is "niet beschikbaar".** Er is geen Bluetooth-verbinding met je Plejd-mesh. Controleer of de adapter of proxy binnen bereik is van een Plejd-apparaat dat op netstroom werkt. Heb je maar één zo'n apparaat, dan kan Home Assistant volgens de README van hass-plejd niet tegelijk met de Plejd-app of een GWY-01 verbinden.
 
-**Een nieuwe of hernoemde lamp ontbreekt.** Je hebt hem in de Plejd-app toegevoegd of gewijzigd, maar Home Assistant gebruikte de bewaarde lijst. Tik op **Apparatenlijst verversen**, of laad de integratie opnieuw via de drie puntjes bij de integratie. Een herstart van Home Assistant is daarvoor niet genoeg.
+**Een nieuwe of hernoemde lamp of scène ontbreekt.** Je hebt een lamp of scène in de Plejd-app toegevoegd of gewijzigd, maar Home Assistant gebruikte de bewaarde lijst. Tik op **Apparatenlijst verversen**, of laad de integratie opnieuw via de drie puntjes bij de integratie. Een herstart van Home Assistant is daarvoor niet genoeg. Een scène die in de Plejd-app als verborgen is gemarkeerd, verschijnt niet in Home Assistant.
 
 **Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het opnieuw proberen met de knop **Apparatenlijst verversen**.
 
