@@ -98,7 +98,9 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer 
 
 **Na een herstart werkt niets.** Lukt de eerste verbinding niet, dan probeert Plejd BLE het na 10, 30, 60 en 120 seconden opnieuw, en daarna elke paar minuten. Na twee mislukte pogingen staat er één waarschuwing in het logboek, met het aantal apparaten dat Home Assistant ziet. Hoort Home Assistant er geen enkel apparaat, dan zit het probleem bij de Bluetooth-adapter of -proxy.
 
-De eerste keer dat Plejd BLE na een start met een apparaat verbindt, maakt het die verbinding meteen een tweede keer, met hetzelfde apparaat. Op de installatie van de maker gaf de eerste verbinding geen opdrachten door aan de andere lampen en de tweede wel. De lampen zijn daarbij één keer per apparaat een paar seconden niet beschikbaar. Staat een verbinding open maar antwoordt hij niet meer, dan wordt hij verbroken en opnieuw gemaakt, met een waarschuwing in het logboek.
+Staat een verbinding open maar antwoordt hij niet meer, dan wordt hij verbroken en opnieuw gemaakt, met een waarschuwing in het logboek.
+
+Op de installatie van de maker gaven opdrachten na een herstart met pyplejd 0.22.0 soms geen effect op lampen die niet de gateway waren, tot de integratie werd herladen. Met pyplejd 0.22.1 werkte het na twee herstarts, via twee verschillende apparaten, direct. Daarom gebruikt Plejd BLE nu pyplejd 0.22.1.
 
 **De inlog wordt geweigerd.** Home Assistant vraagt dan zelf om opnieuw in te loggen. Je kunt de inlog ook wijzigen via de drie puntjes bij de integratie, onder **Opnieuw configureren**.
 
@@ -122,8 +124,9 @@ Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat 
 - De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt. We weten niet of Plejd dat officieel ondersteunt.
 - Niet tegelijk met hass-plejd.
 - Er is geen beschikbaarheid per apparaat. Valt de verbinding met het mesh weg, dan worden alle entiteiten tegelijk niet beschikbaar. Wie dan precies niet bereikbaar is, zie je aan de sensoren voor laatst gezien.
+- Twee opdrachten vlak na elkaar aan dezelfde lamp, bijvoorbeeld aan en uit binnen een paar seconden, kunnen de tweede kwijtraken. De tegel valt dan na 5 seconden terug op de echte stand.
 - Alles is gebouwd op pyplejd, dat door één persoon wordt onderhouden. We gebruiken één vaste versie en een test controleert of die nog past.
-- Getest op één installatie (31 apparaten, een Raspberry Pi met ingebouwde Bluetooth). Een ESPHome-proxy, plotselinge uitval van de adapter en andere Home Assistant-versies zijn niet getest.
+- Getest op één installatie, zie [Kwaliteit](#kwaliteit).
 
 ## Verwijderen
 
@@ -136,9 +139,22 @@ Custom integrations hebben geen officiële kwaliteitsscore van Home Assistant. D
 - Meer dan 60 geautomatiseerde tests, met een dekking van minstens 95%. De workflow laat een run falen onder die grens.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) en de HACS-controle, zonder uitzonderingen. Beide draaien ook elke week.
 - Tests die controleren of de onderdelen van pyplejd die we gebruiken niet veranderen.
-- Een proef op één echte installatie: lampen, scènes, knoppen, bewegingssensoren, een herstart, het wisselen van Bluetooth-ingang, de signaalsensoren en gelijktijdig gebruik met de Plejd-app en een GWY-01.
+- Een proef op één echte installatie, zie hieronder.
 
-Wat we **niet** getest hebben: een ESPHome-proxy, plotselinge uitval van de adapter, de kleurtemperatuur van lampen die dat kunnen en Home Assistant-versies ouder dan 2026.10.
+### Getest op een echte installatie
+
+De installatie van de maker: 31 apparaten, een Raspberry Pi met ingebouwde Bluetooth, Home Assistant 2026.11 en pyplejd 0.22.1.
+
+- Lampen aan, uit en dimmen vanuit Home Assistant. Het apparaat bevestigt gemiddeld na ongeveer 1,1 seconde.
+- De directe tegel na een opdracht.
+- Paneelknoppen, bewegingssensoren en scènes, ook als de scène vanaf een schakelaar of de Plejd-app wordt geactiveerd.
+- Een herstart van Home Assistant: opdrachten aan lampen die niet de gateway zijn werken direct, zowel via Hal als via Trapkast als Bluetooth-ingang.
+- Het wisselen van Bluetooth-ingang in de opties.
+- Gelijktijdig gebruik met de Plejd-app en een GWY-01.
+- Ruim 20 uur zonder één mislukte keep-alive, ook 's nachts.
+- De signaalsensoren en laatst gezien.
+
+**Nog niet getest:** een ESPHome-proxy, plotseling loskoppelen van de adapter, de kleurtemperatuur van lampen die dat kunnen, andere installaties en Home Assistant-versies ouder dan 2026.10.
 
 ## Steun
 
