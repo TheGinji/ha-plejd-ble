@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -66,10 +65,6 @@ type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
 # Na een mislukte verbindingspoging proberen we het na deze aantallen seconden
 # opnieuw. Daarna nemen de gewone controles, elke paar minuten, het over.
 RECONNECT_DELAYS = (10, 30, 60, 120)
-
-# Test B: met False slaan we de tweede verbinding over, om te zien of pyplejd 0.22.1
-# het herstartprobleem zelf oplost. Zet het terug op True als dat niet zo is.
-SETTLE_CONNECTION = False
 
 
 @dataclass(frozen=True)
@@ -157,10 +152,6 @@ class PlejdSite:
         self.confirm_seconds_max = 0.0
         self._failed_pings_in_a_row = 0
         self._cancel_reconnect: CALLBACK_TYPE | None = None
-        # Apparaten waarmee we al een tweede keer verbonden zijn, zie _async_settle_connection.
-        self._settled: set[str] = set()
-        self._settle_lock = asyncio.Lock()
-        self.last_settle: datetime | None = None
         self._stopping = False
         self._unsubs: list[CALLBACK_TYPE] = []
         self._connection_listeners: list[Callable[[], None]] = []
@@ -588,7 +579,6 @@ class PlejdSite:
             if self._failed_pings_in_a_row >= 2:
                 _LOGGER.info("De verbinding met het Plejd-mesh is hersteld")
             self._failed_pings_in_a_row = 0
-            await self._async_settle_connection()
             return
         self.ping_failures += 1
         self.last_ping_failure = dt_util.utcnow()
@@ -622,61 +612,6 @@ class PlejdSite:
             self.connected_via() or "het Plejd-mesh",
         )
         await self.manager.disconnect()
-
-    @property
-    def settle_enabled(self) -> bool:
-        """Geef aan of de tweede verbinding aan staat."""
-        return SETTLE_CONNECTION
-
-    @property
-    def settled_units(self) -> int:
-        """Geef het aantal apparaten waarmee we al een tweede keer verbonden zijn."""
-        return len(self._settled)
-
-    async def _async_settle_connection(self) -> None:
-        """Maak de eerste verbinding met een apparaat een tweede keer, met hetzelfde apparaat.
-
-        Op een echte installatie gaf de eerste verbinding met een apparaat, nadat
-        Home Assistant was gestart, geen opdrachten door aan de andere apparaten in
-        het mesh. Een latere verbinding met hetzelfde apparaat deed dat wel. We
-        vermoeden dat het rustiger verbindingsinterval dat pyplejd aanvraagt pas bij
-        de volgende verbinding ingaat. Daarom verbinden we de eerste keer meteen
-        opnieuw, en alleen met dat ene apparaat: de andere zetten we even uit de
-        keuze, zonder pyplejd om een nieuwe keuze te vragen.
-
-        Staat tijdelijk uit, zie SETTLE_CONNECTION.
-        """
-        if not self.settle_enabled:
-            return
-        async with self._settle_lock:
-            node = getattr(self.manager.mesh, "_gateway_node", None)
-            if node is None or not self.manager.connected or self._stopping:
-                return
-            address = node.BLEaddress
-            if address in self._settled:
-                return
-            self._settled.add(address)
-            hardware = list(self.manager.hardware.values())
-            before = {hw.BLEaddress: hw.blacklisted for hw in hardware}
-            for hw in hardware:
-                hw.blacklisted = hw.BLEaddress != address
-            try:
-                await self.manager.disconnect()
-                reconnected = await self.manager.ping(retry=False)
-            finally:
-                for hw in hardware:
-                    hw.blacklisted = before[hw.BLEaddress]
-            self.last_settle = dt_util.utcnow()
-            if reconnected:
-                _LOGGER.info(
-                    "Verbinding met %s opnieuw gemaakt, zodat de verbindingsinstellingen ingaan",
-                    self.gateway_candidates().get(address, "een Plejd-apparaat"),
-                )
-                return
-            self.ping_failures += 1
-            self.last_ping_failure = dt_util.utcnow()
-            self._failed_pings_in_a_row += 1
-            self._schedule_reconnect()
 
     @callback
     def _schedule_reconnect(self) -> None:
