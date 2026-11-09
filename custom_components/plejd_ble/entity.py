@@ -16,6 +16,9 @@ from .site import PlejdSite
 ASSUMED_STATE_TIMEOUT = 5
 # Plejd rondt de helderheid soms af, dus zoveel verschil telt nog als bevestiging.
 ASSUMED_BRIGHTNESS_TOLERANCE = 3
+# Komt de bevestiging na het verlopen van de wachttijd, maar binnen zoveel seconden na de
+# opdracht, dan tellen we haar als te laat. Daarna beschouwen we haar als toeval.
+LATE_CONFIRM_WINDOW = 30
 
 
 class PlejdEntity(Entity):
@@ -40,6 +43,7 @@ class PlejdEntity(Entity):
         self._cancel_assumed: CALLBACK_TYPE | None = None
         self._assumed_at = 0.0
         self._assumed_unchanged = False
+        self._expired: dict[str, Any] = {}
         self._attr_unique_id = ":".join(device.identifier)
         self._attr_device_info = site.entity_device_info(device)
         self._attr_entity_registry_visible_default = not device.hidden
@@ -67,6 +71,13 @@ class PlejdEntity(Entity):
         if self._assumed and self._confirms_assumed(data):
             self._site.note_confirmed_command(time.monotonic() - self._assumed_at)
             self._clear_assumed()
+        elif self._expired:
+            seconds = time.monotonic() - self._assumed_at
+            if seconds > LATE_CONFIRM_WINDOW:
+                self._expired = {}
+            elif self._matches(self._expired, data):
+                self._site.note_late_confirmed_command(seconds)
+                self._expired = {}
         self._handle_device_update(data)
         self.async_write_ha_state()
 
@@ -76,7 +87,12 @@ class PlejdEntity(Entity):
 
     def _confirms_assumed(self, data: dict[str, Any]) -> bool:
         """Controleer of de melding van het apparaat is wat we gevraagd hebben."""
-        for key, wanted in self._assumed.items():
+        return self._matches(self._assumed, data)
+
+    @staticmethod
+    def _matches(wanted_values: dict[str, Any], data: dict[str, Any]) -> bool:
+        """Controleer of een melding van het apparaat overeenkomt met wat we vroegen."""
+        for key, wanted in wanted_values.items():
             reported = data.get(key)
             if reported is None:
                 return False
@@ -93,6 +109,7 @@ class PlejdEntity(Entity):
         if self._cancel_assumed is not None:
             self._site.note_superseded_command()
         self._site.note_command()
+        self._expired = {}
         self._assumed = values
         # Stond de lamp al zo, dan meldt het apparaat misschien niets. Dat is geen fout.
         self._assumed_unchanged = self._confirms_assumed(self._data)
@@ -107,12 +124,14 @@ class PlejdEntity(Entity):
     def _async_assumed_expired(self, _now: datetime) -> None:
         """Val terug op de gemelde stand als het apparaat niets bevestigde."""
         self._cancel_assumed = None
+        wanted = self._assumed
         self._assumed = {}
         if self._site.manager.connected:
             if self._assumed_unchanged:
                 self._site.note_unchanged_command()
             else:
                 self._site.note_unconfirmed_command()
+                self._expired = wanted
         self.async_write_ha_state()
 
     @callback

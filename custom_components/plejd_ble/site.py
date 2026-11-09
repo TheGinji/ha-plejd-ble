@@ -148,8 +148,10 @@ class PlejdSite:
         self.commands_confirmed = 0
         self.commands_unchanged = 0
         self.commands_superseded = 0
+        self.commands_late_confirmed = 0
         self.confirm_seconds_total = 0.0
         self.confirm_seconds_max = 0.0
+        self.late_confirm_seconds_max = 0.0
         self._failed_pings_in_a_row = 0
         self._cancel_reconnect: CALLBACK_TYPE | None = None
         self._stopping = False
@@ -398,6 +400,12 @@ class PlejdSite:
         self.confirm_seconds_max = max(self.confirm_seconds_max, seconds)
 
     @callback
+    def note_late_confirmed_command(self, seconds: float) -> None:
+        """Onthoud dat een bevestiging kwam na onze wachttijd, en hoe laat."""
+        self.commands_late_confirmed += 1
+        self.late_confirm_seconds_max = max(self.late_confirm_seconds_max, seconds)
+
+    @callback
     def note_superseded_command(self) -> None:
         """Onthoud dat een nieuwe opdracht kwam voordat de vorige bevestigd was."""
         self.commands_superseded += 1
@@ -575,7 +583,14 @@ class PlejdSite:
         """Verbind met het mesh of houd de verbinding in leven."""
         if self._stopping or not self.started:
             return
-        if await self.manager.ping():
+        try:
+            alive = await self.manager.ping()
+        except Exception as err:  # noqa: BLE001 - een achtergrondtaak mag niet sneuvelen
+            if self._failed_pings_in_a_row == 0:
+                _LOGGER.warning("De verbinding met het Plejd-mesh gaf een fout: %s", err)
+            _LOGGER.debug("Fout bij de keep-alive", exc_info=True)
+            alive = False
+        if alive:
             if self._failed_pings_in_a_row >= 2:
                 _LOGGER.info("De verbinding met het Plejd-mesh is hersteld")
             self._failed_pings_in_a_row = 0
@@ -632,4 +647,8 @@ class PlejdSite:
         """Controleer of de klok van het mesh klopt."""
         if self._stopping:
             return
-        await self.manager.broadcast_time()
+        try:
+            await self.manager.broadcast_time()
+        except Exception as err:  # noqa: BLE001 - een achtergrondtaak mag niet sneuvelen
+            _LOGGER.warning("De klokcontrole van het Plejd-mesh mislukte: %s", err)
+            _LOGGER.debug("Fout bij de klokcontrole", exc_info=True)
