@@ -2,15 +2,25 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 import json
 from types import SimpleNamespace
 from typing import Any
+from unittest.mock import patch
 
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant.core import HomeAssistant
 
 from custom_components.plejd_ble.diagnostics import async_get_config_entry_diagnostics
+
+
+@pytest.fixture(autouse=True)
+def settle_on() -> Generator[None]:
+    """Zet de tweede verbinding aan, ook als hij in de code tijdelijk uit staat."""
+    with patch("custom_components.plejd_ble.site.SETTLE_CONNECTION", True):
+        yield
 
 
 def pick_gateway(entry: MockConfigEntry, index: int = 0) -> tuple[Any, str]:
@@ -105,6 +115,22 @@ async def test_failed_second_connection_is_retried(
     site._cancel_reconnect = None
 
 
+async def test_settle_is_skipped_when_switched_off(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry, mocks: SimpleNamespace
+) -> None:
+    """Staat de tweede verbinding uit, dan blijft de eerste verbinding gewoon staan."""
+    site, _address = pick_gateway(loaded_entry)
+    mocks.mesh.disconnect.reset_mock()
+
+    with patch("custom_components.plejd_ble.site.SETTLE_CONNECTION", False):
+        await site._async_ping()
+        result = await async_get_config_entry_diagnostics(hass, loaded_entry)
+
+    assert mocks.mesh.disconnect.await_count == 0
+    assert site.settled_units == 0
+    assert result["settle"]["enabled"] is False
+
+
 async def test_diagnostics_count_settled_units_without_addresses(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
@@ -114,6 +140,7 @@ async def test_diagnostics_count_settled_units_without_addresses(
 
     result = await async_get_config_entry_diagnostics(hass, loaded_entry)
 
+    assert result["settle"]["enabled"] is True
     assert result["settle"]["units"] == 1
     assert result["settle"]["last"] is not None
     assert address not in json.dumps(result)
