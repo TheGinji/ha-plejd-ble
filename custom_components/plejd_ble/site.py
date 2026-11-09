@@ -67,6 +67,10 @@ type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
 # opnieuw. Daarna nemen de gewone controles, elke paar minuten, het over.
 RECONNECT_DELAYS = (10, 30, 60, 120)
 
+# Test B: met False slaan we de tweede verbinding over, om te zien of pyplejd 0.22.1
+# het herstartprobleem zelf oplost. Zet het terug op True als dat niet zo is.
+SETTLE_CONNECTION = False
+
 
 @dataclass(frozen=True)
 class SignalReading:
@@ -620,6 +624,11 @@ class PlejdSite:
         await self.manager.disconnect()
 
     @property
+    def settle_enabled(self) -> bool:
+        """Geef aan of de tweede verbinding aan staat."""
+        return SETTLE_CONNECTION
+
+    @property
     def settled_units(self) -> int:
         """Geef het aantal apparaten waarmee we al een tweede keer verbonden zijn."""
         return len(self._settled)
@@ -634,7 +643,11 @@ class PlejdSite:
         de volgende verbinding ingaat. Daarom verbinden we de eerste keer meteen
         opnieuw, en alleen met dat ene apparaat: de andere zetten we even uit de
         keuze, zonder pyplejd om een nieuwe keuze te vragen.
+
+        Staat tijdelijk uit, zie SETTLE_CONNECTION.
         """
+        if not self.settle_enabled:
+            return
         async with self._settle_lock:
             node = getattr(self.manager.mesh, "_gateway_node", None)
             if node is None or not self.manager.connected or self._stopping:
