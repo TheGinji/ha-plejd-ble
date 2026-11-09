@@ -74,6 +74,12 @@ async def async_get_config_entry_diagnostics(
             "confirm_seconds_max": (
                 round(site.confirm_seconds_max, 2) if site.commands_confirmed else None
             ),
+            "late_confirmed": site.commands_late_confirmed,
+            "late_confirm_seconds_max": (
+                round(site.late_confirm_seconds_max, 2)
+                if site.commands_late_confirmed
+                else None
+            ),
             "last_unconfirmed": (
                 site.last_unconfirmed_command.isoformat()
                 if site.last_unconfirmed_command

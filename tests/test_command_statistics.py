@@ -16,7 +16,7 @@ from homeassistant.util import dt as dt_util
 
 from custom_components.plejd_ble.diagnostics import async_get_config_entry_diagnostics
 
-from . import DIMMER, get_device, get_entity_id, push_state
+from . import DIMMER, get_device, get_entity, get_entity_id, push_state
 
 
 async def light_command(
@@ -98,5 +98,63 @@ async def test_statistics_start_empty(
         "superseded": 0,
         "confirm_seconds_avg": None,
         "confirm_seconds_max": None,
+        "late_confirmed": 0,
+        "late_confirm_seconds_max": None,
         "last_unconfirmed": None,
     }
+
+
+async def test_late_confirmation_is_counted(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Komt de bevestiging na de wachttijd, dan weten we dat de opdracht niet verloren ging."""
+    entity_id = get_entity_id(hass, "light", DIMMER)
+    device = get_device(loaded_entry, DIMMER)
+    push_state(device, state=False, dim=0)
+    await light_command(hass, "turn_on", entity_id, brightness=100)
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=6))
+    await hass.async_block_till_done()
+
+    push_state(device, state=True, dim=100)
+
+    commands = (await async_get_config_entry_diagnostics(hass, loaded_entry))["commands"]
+    assert commands["unconfirmed"] == 1
+    assert commands["late_confirmed"] == 1
+    assert commands["late_confirm_seconds_max"] >= 0
+
+
+async def test_unrelated_report_after_the_wait_is_not_a_late_confirmation(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Een melding die niet is wat we vroegen, telt niet als te late bevestiging."""
+    entity_id = get_entity_id(hass, "light", DIMMER)
+    device = get_device(loaded_entry, DIMMER)
+    push_state(device, state=False, dim=0)
+    await light_command(hass, "turn_on", entity_id, brightness=100)
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=6))
+    await hass.async_block_till_done()
+
+    push_state(device, state=False, dim=0)
+
+    commands = (await async_get_config_entry_diagnostics(hass, loaded_entry))["commands"]
+    assert commands["unconfirmed"] == 1
+    assert commands["late_confirmed"] == 0
+
+
+async def test_report_long_after_the_command_is_not_counted_as_late(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Na het venster beschouwen we een passende melding als toeval."""
+    entity_id = get_entity_id(hass, "light", DIMMER)
+    device = get_device(loaded_entry, DIMMER)
+    push_state(device, state=False, dim=0)
+    await light_command(hass, "turn_on", entity_id, brightness=100)
+    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(seconds=6))
+    await hass.async_block_till_done()
+    get_entity(hass, entity_id)._assumed_at -= 31
+
+    push_state(device, state=True, dim=100)
+
+    commands = (await async_get_config_entry_diagnostics(hass, loaded_entry))["commands"]
+    assert commands["unconfirmed"] == 1
+    assert commands["late_confirmed"] == 0
