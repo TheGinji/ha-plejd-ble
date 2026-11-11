@@ -86,6 +86,13 @@ async def async_get_config_entry_diagnostics(
                 else None
             ),
         },
+        "messages": {
+            "errors": site.message_errors,
+            "last_error": (
+                site.last_message_error.isoformat() if site.last_message_error else None
+            ),
+            "last_error_info": site.last_message_error_info,
+        },
         "cache": {
             "last_fetched": (
                 site.cache_fetched_at.isoformat() if site.cache_fetched_at else None
