@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
 import inspect
@@ -152,6 +152,9 @@ class PlejdSite:
         self.confirm_seconds_total = 0.0
         self.confirm_seconds_max = 0.0
         self.late_confirm_seconds_max = 0.0
+        self.message_errors = 0
+        self.last_message_error: datetime | None = None
+        self.last_message_error_info: str | None = None
         self._failed_pings_in_a_row = 0
         self._cancel_reconnect: CALLBACK_TYPE | None = None
         self._stopping = False
@@ -189,6 +192,7 @@ class PlejdSite:
         except PlejdConnectionError as err:
             raise ConfigEntryNotReady from err
 
+        self._guard_message_handlers()
         self.used_cloud = cloud.fetched_from_cloud
         if cloud.fetched_from_cloud:
             self.cache_fetched_at = dt_util.utcnow()
@@ -201,6 +205,55 @@ class PlejdSite:
 
         self._build_devices()
         self._update_cloud_issue()
+
+    def _guard_message_handlers(self) -> None:
+        """Vang fouten op in het verwerken van berichten uit het mesh, per apparaat.
+
+        pyplejd verwerkt elk bericht uit het mesh zonder foutafhandeling. Een bericht
+        met een leeg stuk gegevens laat een lamp crashen, en bij een bericht aan alle
+        apparaten krijgen de overige apparaten het dan niet meer. Door elk apparaat
+        apart af te schermen, gaat een kapot bericht verloren, maar alleen dat.
+        """
+        for device in self.manager.devices:
+            handler = getattr(device, "parse_lastdata", None)
+            if handler is None or getattr(device, "_plejd_ble_guarded", False):
+                continue
+            device.parse_lastdata = self._guarded(handler)
+            device._plejd_ble_guarded = True
+
+    def _guarded(
+        self, handler: Callable[[Any], Awaitable[None]]
+    ) -> Callable[[Any], Awaitable[None]]:
+        """Pak de berichtverwerking van een apparaat in, zodat een fout wordt vastgelegd."""
+
+        async def guarded_parse_lastdata(data: Any) -> None:
+            try:
+                await handler(data)
+            except Exception as err:  # noqa: BLE001 - één kapot bericht mag niets stilleggen
+                self._note_message_error(err, data)
+
+        return guarded_parse_lastdata
+
+    def _note_message_error(self, err: Exception, data: Any) -> None:
+        """Leg een fout in een bericht uit het mesh vast, zonder adressen."""
+        command = getattr(data, "command", None)
+        length = len(getattr(data, "payload", None) or [])
+        info = (
+            f"commando 0x{command:04x}, {length} bytes, {type(err).__name__}"
+            if isinstance(command, int)
+            else f"{length} bytes, {type(err).__name__}"
+        )
+        self.message_errors += 1
+        self.last_message_error = dt_util.utcnow()
+        self.last_message_error_info = info
+        if self.message_errors == 1:
+            _LOGGER.warning(
+                "Een bericht uit het Plejd-mesh kon niet worden verwerkt (%s). "
+                "Dat komt uit pyplejd en heeft verder geen gevolgen. Het aantal staat in de "
+                "diagnostische gegevens",
+                info,
+            )
+        _LOGGER.debug("Fout bij een bericht uit het mesh", exc_info=err)
 
     @callback
     def _update_cloud_issue(self) -> None:
