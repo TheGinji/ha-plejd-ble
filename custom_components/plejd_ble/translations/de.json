@@ -102,6 +102,10 @@
     "cloud_unreachable": {
       "title": "Plejd-Cloud nicht erreichbar",
       "description": "Die Geräteliste konnte seit mehr als sieben Tagen nicht mehr aus der Plejd-Cloud aktualisiert werden. Plejd BLE arbeitet weiter mit der gespeicherten Liste. Neue oder umbenannte Geräte erscheinen erst, wenn die Cloud wieder erreichbar ist."
+    },
+    "mesh_disconnected": {
+      "title": "Keine Bluetooth-Verbindung zum Plejd-Mesh",
+      "description": "Home Assistant kann sich seit einigen Minuten nicht mit dem Plejd-Mesh verbinden. Prüfe, ob der Bluetooth-Adapter oder -Proxy funktioniert und in Reichweite eines netzbetriebenen Plejd-Geräts ist. Die Meldung verschwindet von selbst, sobald die Verbindung wieder besteht."
     }
   },
   "exceptions": {

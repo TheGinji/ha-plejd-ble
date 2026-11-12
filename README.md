@@ -103,6 +103,8 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer 
 
 **Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het opnieuw proberen met de knop **Apparatenlijst verversen**.
 
+**Melding "Geen Bluetooth-verbinding met het Plejd-mesh".** Die staat bij Herstelacties als er al vijf minuten geen verbinding is. Hij verdwijnt vanzelf zodra de verbinding terug is. Een korte onderbreking geeft geen melding, zoals het herstel na uitval van het apparaat waarlangs je verbonden bent, dat ongeveer een minuut duurt. Controleer bij een melding of de Bluetooth-adapter of -proxy werkt en binnen bereik is van een Plejd-apparaat dat op netstroom werkt.
+
 **Melding "Een bericht uit het Plejd-mesh kon niet worden verwerkt".** Dat komt uit pyplejd, die een bericht met een lege inhoud niet aankan. Plejd BLE vangt dat op, waarbij alleen dat ene bericht verloren gaat. Je ziet de melding hooguit één keer per start. Het aantal en het soort fout staan in de diagnostische gegevens.
 
 **Waarlangs ben ik verbonden?** Kijk bij de sensor **Verbonden via** onder het apparaat Plejd BLE, bij Diagnostiek. Die toont de naam van het apparaat waarlangs Home Assistant op dat moment met het mesh verbonden is. Staat de verbindingssensor op uit, dan is er geen verbinding. Zie ook de lijst met apparaten en tijdstippen in de diagnostische gegevens.

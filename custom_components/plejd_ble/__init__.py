@@ -57,6 +57,7 @@ async def async_remove_entry(hass: HomeAssistant, entry: PlejdBleConfigEntry) ->
     """Ruim lokaal bewaarde sitegegevens en meldingen op bij verwijderen."""
     await cache_store(hass, entry.entry_id).async_remove()
     ir.async_delete_issue(hass, DOMAIN, f"cloud_unreachable_{entry.entry_id}")
+    ir.async_delete_issue(hass, DOMAIN, f"mesh_disconnected_{entry.entry_id}")
 
 
 async def async_remove_config_entry_device(

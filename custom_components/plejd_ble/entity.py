@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import time
-from typing import Any
+from typing import Any, Final
 
 from homeassistant.core import CALLBACK_TYPE, callback
 from homeassistant.helpers.entity import Entity
@@ -13,12 +13,12 @@ from homeassistant.helpers.event import async_call_later
 from .site import PlejdSite
 
 # Zo lang tonen we wat we gevraagd hebben als het apparaat het niet bevestigt.
-ASSUMED_STATE_TIMEOUT = 5
+ASSUMED_STATE_TIMEOUT: Final = 5
 # Plejd rondt de helderheid soms af, dus zoveel verschil telt nog als bevestiging.
-ASSUMED_BRIGHTNESS_TOLERANCE = 3
+ASSUMED_BRIGHTNESS_TOLERANCE: Final = 3
 # Komt de bevestiging na het verlopen van de wachttijd, maar binnen zoveel seconden na de
 # opdracht, dan tellen we haar als te laat. Daarna beschouwen we haar als toeval.
-LATE_CONFIRM_WINDOW = 30
+LATE_CONFIRM_WINDOW: Final = 30
 
 
 class PlejdEntity(Entity):
