@@ -103,6 +103,8 @@ De signaalsterkte en het laatst-gezien-tijdstip meet Plejd BLE zelf, één keer 
 
 **Melding "Plejd-cloud niet bereikbaar".** De apparatenlijst kon al meer dan zeven dagen niet worden ververst. De integratie blijft werken met de bewaarde lijst, maar nieuwe of hernoemde apparaten verschijnen pas als de cloud weer bereikbaar is. Je kunt het opnieuw proberen met de knop **Apparatenlijst verversen**.
 
+**Melding "Een bericht uit het Plejd-mesh kon niet worden verwerkt".** Dat komt uit pyplejd, die een bericht met een lege inhoud niet aankan. Plejd BLE vangt dat op, waarbij alleen dat ene bericht verloren gaat. Je ziet de melding hooguit één keer per start. Het aantal en het soort fout staan in de diagnostische gegevens.
+
 **Waarlangs ben ik verbonden?** Kijk bij de sensor **Verbonden via** onder het apparaat Plejd BLE, bij Diagnostiek. Die toont de naam van het apparaat waarlangs Home Assistant op dat moment met het mesh verbonden is. Staat de verbindingssensor op uit, dan is er geen verbinding. Zie ook de lijst met apparaten en tijdstippen in de diagnostische gegevens.
 
 **Na een herstart werkt niets.** Lukt de eerste verbinding niet, dan probeert Plejd BLE het na 10, 30, 60 en 120 seconden opnieuw, en daarna elke paar minuten. Na twee mislukte pogingen staat er één waarschuwing in het logboek, met het aantal apparaten dat Home Assistant ziet. Hoort Home Assistant er geen enkel apparaat, dan zit het probleem bij de Bluetooth-adapter of -proxy.
@@ -132,6 +134,7 @@ Haal wachtwoorden, e-mailadressen, adressen en Bluetooth-adressen uit alles wat 
 - Alleen Bluetooth. Er is geen terugval via de Plejd-cloud: de cloud wordt niet gebruikt om lampen te bedienen.
 - De integratie gebruikt de cloud-API die ook de Plejd-app gebruikt. We weten niet of Plejd dat officieel ondersteunt.
 - Niet tegelijk met hass-plejd.
+- Valt het apparaat uit waarlangs je verbonden bent, dan duurt het ongeveer een minuut voordat Home Assistant via een ander apparaat verbonden is. pyplejd probeert eerst het apparaat dat niet meer bereikbaar is, tien keer. In die minuut zijn de entiteiten niet beschikbaar. Je Plejd-schakelaars blijven werken.
 - Er is geen beschikbaarheid per apparaat. Valt de verbinding met het mesh weg, dan worden alle entiteiten tegelijk niet beschikbaar. Wie dan precies niet bereikbaar is, zie je aan de sensoren voor laatst gezien.
 - Twee opdrachten vlak na elkaar aan dezelfde lamp, bijvoorbeeld aan en uit binnen een paar seconden, kunnen de tweede kwijtraken. De tegel valt dan na 5 seconden terug op de echte stand.
 - Alles is gebouwd op pyplejd, dat door één persoon wordt onderhouden. We gebruiken één vaste versie en een test controleert of die nog past.
@@ -161,10 +164,11 @@ De installatie van de maker: 31 apparaten, een Raspberry Pi met ingebouwde Bluet
 - Een herstart van Home Assistant: opdrachten aan lampen die niet de gateway zijn werken direct, zowel via Hal als via Trapkast als Bluetooth-ingang.
 - Het wisselen van Bluetooth-ingang in de opties.
 - Gelijktijdig gebruik met de Plejd-app en een GWY-01.
-- Ruim 20 uur zonder één mislukte keep-alive, ook 's nachts.
+- Meer dan 30 uur zonder één mislukte keep-alive, ook 's nachts.
+- Plotseling uitvallen van het apparaat waarlangs Home Assistant verbonden is (de voeding van de Hal-lamp uitgeschakeld): Home Assistant was na ongeveer een minuut via een ander apparaat terug, en lampen die niet de gateway zijn bleven daarna bedienbaar.
 - De signaalsensoren en laatst gezien.
 
-**Nog niet getest:** een ESPHome-proxy, plotseling loskoppelen van de adapter, de kleurtemperatuur van lampen die dat kunnen en andere installaties.
+**Nog niet getest:** een ESPHome-proxy, plotseling loskoppelen van de Bluetooth-adapter, de kleurtemperatuur van lampen die dat kunnen en andere installaties.
 
 ## Steun
 
