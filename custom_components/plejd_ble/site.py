@@ -6,9 +6,8 @@ from collections import deque
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
-import inspect
 import logging
-from typing import Any
+from typing import Any, Final
 
 from pyplejd import (
     PLEJD_SERVICE,
@@ -64,7 +63,12 @@ type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
 
 # Na een mislukte verbindingspoging proberen we het na deze aantallen seconden
 # opnieuw. Daarna nemen de gewone controles, elke paar minuten, het over.
-RECONNECT_DELAYS = (10, 30, 60, 120)
+RECONNECT_DELAYS: Final = (10, 30, 60, 120)
+
+# Blijft de verbinding met het mesh zo lang weg (in seconden), dan melden we dat in
+# Herstelacties. Een korte onderbreking, zoals het herstel na uitval van het apparaat
+# waarlangs we verbonden waren, geeft dus geen melding.
+CONNECTION_ISSUE_DELAY: Final = 300
 
 
 @dataclass(frozen=True)
@@ -118,7 +122,7 @@ class CachedCloudSite(PlejdCloudSite):
 class PlejdSite:
     """Eén Plejd-site, gekoppeld aan één configuratie-item."""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+    def __init__(self, hass: HomeAssistant, entry: PlejdBleConfigEntry) -> None:
         """Maak de site aan, zonder iets te verbinden."""
         self.hass = hass
         self.entry = entry
@@ -157,6 +161,7 @@ class PlejdSite:
         self.last_message_error_info: str | None = None
         self._failed_pings_in_a_row = 0
         self._cancel_reconnect: CALLBACK_TYPE | None = None
+        self._cancel_connection_issue: CALLBACK_TYPE | None = None
         self._stopping = False
         self._unsubs: list[CALLBACK_TYPE] = []
         self._connection_listeners: list[Callable[[], None]] = []
@@ -343,11 +348,6 @@ class PlejdSite:
     def async_register_devices(self) -> None:
         """Zet alle apparaten in het register, hoofdapparaten eerst."""
         registry = dr.async_get(self.hass)
-        # Nieuwere versies van Home Assistant willen via_device_id in plaats
-        # van via_device; oudere kennen dat nog niet.
-        uses_via_device_id = (
-            "via_device_id" in inspect.signature(registry.async_get_or_create).parameters
-        )
         created: dict[str, dr.DeviceEntry] = {}
         ordered = sorted(
             (d for d in self.devices if d.outputType),
@@ -360,10 +360,9 @@ class PlejdSite:
             fields = self.device_registry_fields(device)
             parent = device.parent_identifier
             if parent != identifier and parent in self.names:
-                if uses_via_device_id:
-                    fields["via_device_id"] = created[parent].id
-                else:
-                    fields["via_device"] = (DOMAIN, parent)
+                # Sinds Home Assistant 2026.8 wil het register het id van het
+                # bovenliggende apparaat; ons minimum is 2026.10.
+                fields["via_device_id"] = created[parent].id
             created[identifier] = registry.async_get_or_create(
                 config_entry_id=self.entry.entry_id, **fields
             )
@@ -551,6 +550,7 @@ class PlejdSite:
         )
         self.manager.connection_monitor = self._connection_monitor
         self.started = True
+        self._schedule_connection_issue()
 
         self.entry.async_create_background_task(
             self.hass, self._async_ping(), "plejd_ble eerste verbinding"
@@ -560,7 +560,7 @@ class PlejdSite:
         )
 
     async def async_stop(self) -> None:
-        """Stop alles en verbreek de Bluetooth-verbinding."""
+        """Stop alles, haal de melding weg en verbreek de Bluetooth-verbinding."""
         self._stopping = True
         for unsub in self._unsubs:
             unsub()
@@ -568,12 +568,12 @@ class PlejdSite:
         if self._cancel_reconnect is not None:
             self._cancel_reconnect()
             self._cancel_reconnect = None
+        self._clear_connection_issue()
         await self.manager.disconnect()
 
-    async def async_hass_stopping(self, _event: Event) -> None:
-        """Verbreek de verbinding netjes als Home Assistant stopt."""
-        self._stopping = True
-        await self.manager.disconnect()
+    async def async_hass_stopping(self, _event: Event | None = None) -> None:
+        """Doe hetzelfde als stoppen, voor als Home Assistant zelf stopt."""
+        await self.async_stop()
 
     async def _async_close_stale_connections(self) -> None:
         """Sluit verbindingen die nog openstaan van een eerdere sessie."""
@@ -622,12 +622,16 @@ class PlejdSite:
             )
 
     def _connection_monitor(self, connected: bool) -> None:
-        """Onthoud verbindingswijzigingen en probeer opnieuw te verbinden bij uitval."""
+        """Onthoud verbindingswijzigingen, bewaak de melding en verbind opnieuw bij uitval."""
         self.connection_events.append((dt_util.utcnow(), connected))
         for listener in list(self._connection_listeners):
             listener()
-        if self._stopping or connected:
+        if connected:
+            self._clear_connection_issue()
             return
+        if self._stopping:
+            return
+        self._schedule_connection_issue()
         self.entry.async_create_background_task(
             self.hass, self._async_ping(), "plejd_ble opnieuw verbinden"
         )
@@ -680,6 +684,43 @@ class PlejdSite:
             self.connected_via() or "het Plejd-mesh",
         )
         await self.manager.disconnect()
+
+    @property
+    def _connection_issue_id(self) -> str:
+        """Geef het id van de melding over een verbinding die wegblijft."""
+        return f"mesh_disconnected_{self.entry.entry_id}"
+
+    @callback
+    def _schedule_connection_issue(self) -> None:
+        """Start de wachttijd waarna we een verbinding die wegblijft melden."""
+        if self._cancel_connection_issue is not None or self._stopping:
+            return
+        self._cancel_connection_issue = async_call_later(
+            self.hass, CONNECTION_ISSUE_DELAY, self._async_create_connection_issue
+        )
+
+    @callback
+    def _async_create_connection_issue(self, _now: datetime) -> None:
+        """Meld in Herstelacties dat er al enkele minuten geen verbinding is."""
+        self._cancel_connection_issue = None
+        if self._stopping or self.manager.connected:
+            return
+        ir.async_create_issue(
+            self.hass,
+            DOMAIN,
+            self._connection_issue_id,
+            is_fixable=False,
+            severity=ir.IssueSeverity.WARNING,
+            translation_key="mesh_disconnected",
+        )
+
+    @callback
+    def _clear_connection_issue(self) -> None:
+        """Annuleer de wachttijd en haal de melding weg."""
+        if self._cancel_connection_issue is not None:
+            self._cancel_connection_issue()
+            self._cancel_connection_issue = None
+        ir.async_delete_issue(self.hass, DOMAIN, self._connection_issue_id)
 
     @callback
     def _schedule_reconnect(self) -> None:
