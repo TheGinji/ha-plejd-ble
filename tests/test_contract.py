@@ -73,6 +73,17 @@ def test_device_commands_are_unchanged() -> None:
     assert parameters(PlejdRelay.turn_off) == ["self"]
 
 
+def test_relay_reads_its_state_from_the_poll() -> None:
+    """Een relais leest zijn stand uit het antwoord op de poll bij het verbinden.
+
+    Dat kan pyplejd sinds 0.22.1. Zonder deze methode zou een relais na een
+    herstart op uit blijven staan tot zijn eerstvolgende wijziging.
+    """
+    assert "parse_lightlevel" in vars(PlejdRelay)
+    assert inspect.iscoroutinefunction(PlejdRelay.parse_lightlevel)
+    assert parameters(PlejdRelay.parse_lightlevel) == ["self", "level"]
+
+
 def test_scene_interface_is_unchanged() -> None:
     """Een scène heeft nog de onderdelen waar wij op leunen."""
     assert parameters(PlejdScene.__init__) == ["self", "scene", "index", "mesh"]

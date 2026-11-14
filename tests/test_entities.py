@@ -134,6 +134,25 @@ async def test_switch_follows_state_and_commands(
     turn_on.assert_awaited_once_with()
 
 
+async def test_switch_takes_its_state_from_the_poll_after_connecting(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Bij het verbinden vraagt pyplejd de stand op, ook van relais.
+
+    Voor pyplejd 0.22.1 ontbrak dit bij relais: na een herstart bleef de schakelaar
+    op uit staan tot zijn eerstvolgende wijziging.
+    """
+    entity_id = get_entity_id(hass, "switch", RELAY_A)
+    device = get_device(loaded_entry, RELAY_A)
+    assert hass.states.get(entity_id).state == "unknown"
+
+    await device.parse_lightlevel(SimpleNamespace(state=True))
+    assert hass.states.get(entity_id).state == "on"
+
+    await device.parse_lightlevel(SimpleNamespace(state=False))
+    assert hass.states.get(entity_id).state == "off"
+
+
 async def test_button_events(
     hass: HomeAssistant, loaded_entry: MockConfigEntry
 ) -> None:
