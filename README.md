@@ -89,7 +89,7 @@ This also happens when Home Assistant itself activates the scene. So do not let 
 
 When you control a light or a relay, Home Assistant shows the new state right away. A Plejd device reports its own state back only after about a second. As soon as the device reports the new state, only what the device reports counts again. If no report arrives within five seconds, the tile falls back to the last reported state. Color temperature is never assumed: you see it only once the device reports it.
 
-On/off and brightness are requested by Plejd BLE at every connection. For relays this works since pyplejd 0.22.1; older versions showed relays as off after a restart until their next state change. We have not yet seen this on real hardware, see [Quality](#quality). Plejd only reports color temperature when it changes. That is why Plejd BLE keeps the last known value, even when the light is off. If the color was changed in the Plejd app in the meantime, the value is only correct again after the next change.
+On/off and brightness are requested by Plejd BLE at every connection. For relays this does not work yet: pyplejd 0.22.1, the version we use, drops the relay's answer, so a relay shows as unknown after a restart until its next state change. The fix is merged in the pyplejd repository, but it is not in 0.22.1. Plejd BLE will use it as soon as a pyplejd release contains it. Plejd only reports color temperature when it changes. That is why Plejd BLE keeps the last known value, even when the light is off. If the color was changed in the Plejd app in the meantime, the value is only correct again after the next change.
 
 Plejd BLE measures signal strength and last-seen time itself, once a minute, for every device on mains power. Home Assistant does not pass on a message that is identical to the previous one, and Plejd devices keep sending the same one, so Plejd BLE asks for the next message every minute. Last seen is therefore accurate to the minute. This is deliberately not the value from pyplejd: that one keeps the strongest value ever seen and so says nothing about now. Battery-powered devices rarely report, so this is not meant for them. The battery level is shown raw, because pyplejd itself is not sure whether the scale is 0 to 255. A sensor rarely reports its battery, so the last value stays until a new one arrives. After the hardware test we will check whether a percentage can be made of it.
 
@@ -136,6 +136,7 @@ Remove passwords, email addresses, addresses and Bluetooth addresses from anythi
 - Not at the same time as hass-plejd.
 - If the device you are connected through drops out, it takes about a minute before Home Assistant is connected through another device. pyplejd first tries the device that is no longer reachable, ten times. During that minute the entities are unavailable. Your Plejd switches keep working.
 - There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors.
+- After a restart, a relay (`switch`) shows as unknown until its next state change, see [What you get](#what-you-get).
 - Two commands to the same light right after each other, for example on and off within a few seconds, can lose the second one. The tile then falls back to the real state after 5 seconds.
 - Everything is built on pyplejd, which is maintained by one person. We use one fixed version, and a test checks that it still fits.
 - Tested on one installation, see [Quality](#quality).
@@ -171,7 +172,7 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 - The signal sensors and last seen.
 
 **Not tested yet:**
-- Relay outputs (the `switch` entity) on real hardware. They are covered by automated tests, and pyplejd 0.22.1 contains a fix for the relay state after a restart, but the maker has no device that Plejd reports as a relay. His REL-01-2P is set up as a light in the Plejd app, so it appears as a `light`.
+- Relay outputs (the `switch` entity) on real hardware. They are covered by automated tests, but the maker has no device that Plejd reports as a relay. His REL-01-2P is set up as a light in the Plejd app, so it appears as a `light`. The relay state after a restart is a known gap, see [What you get](#what-you-get).
 - The repair notice for a long connection loss. We have only seen that it does not appear by mistake at startup.
 - An ESPHome proxy, sudden disconnection of the Bluetooth adapter, the color temperature of lights that support it, and other installations.
 
