@@ -9,6 +9,8 @@
 [![Stars](https://img.shields.io/github/stars/TheGinji/ha-plejd-ble?style=social)](https://github.com/TheGinji/ha-plejd-ble/stargazers)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support%20the%20maker-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/theginji)
 
+![Plejd BLE (revised): Plejd lighting over Bluetooth for Home Assistant](https://raw.githubusercontent.com/TheGinji/ha-plejd-ble/main/docs/images/hero.svg)
+
 Home Assistant integration for Plejd lighting over Bluetooth (BLE), built on [pyplejd](https://github.com/thomasloven/pyplejd). You get your lights, relays, buttons and motion sensors in Home Assistant, without a pile of extra entities.
 
 In Home Assistant and HACS this integration is called **Plejd BLE (revised)**. The addition is there to tell it apart from [hass-plejd](https://github.com/thomasloven/hass-plejd), which calls itself "Plejd BLE". It is a different integration, not a newer version of the one by Thomas Lovén.
@@ -26,6 +28,14 @@ Plejd BLE is for you if you mostly have lights, dimmers, relays, buttons and mot
 An example, measured by the maker on one installation with 31 devices, without a Bluetooth connection (so this is about counts, not about behaviour): hass-plejd had 225 active entities there. That is 18 lights, 62 button events, 17 switches for choosing the Bluetooth input, 62 binary sensors, 60 sensors, 2 scenes and 4 scene events. The binary sensors and sensors are mostly diagnostics, such as connection, signal strength and "last seen". Plejd BLE (version 0.2.2, without scenes yet) had 86 active entities on the same installation: the 18 lights, the 62 button events, 2 motion sensors and a few diagnostic entities (a refresh button, a connection sensor and the battery level of the motion sensors). Last seen and signal strength per device exist too, but are off until you need them. With all diagnostics on, that makes 121. Since version 0.2.3 the visible Plejd scenes are added on top. With them, Home Assistant lists 125 entities for the same installation (version 0.2.17). The choice of Bluetooth input lives in the options instead of separate switches.
 
 They **cannot run at the same time**, because a Plejd device holds only one Bluetooth connection at a time.
+
+## What it looks like
+
+These cards are made with the entities of Plejd BLE. The maker's Home Assistant is in Dutch, so the images are redrawn from screenshots of the maker's own dashboard, with English labels and the real values.
+
+![Connection with the Plejd mesh and the cloud](https://raw.githubusercontent.com/TheGinji/ha-plejd-ble/main/docs/images/connection.svg)
+
+![Lights, motion sensors and batteries](https://raw.githubusercontent.com/TheGinji/ha-plejd-ble/main/docs/images/devices.svg)
 
 ## Installation
 
@@ -134,7 +144,7 @@ Remove passwords, email addresses, addresses and Bluetooth addresses from anythi
 - Bluetooth only. There is no fallback through the Plejd cloud: the cloud is not used to control lights.
 - The integration uses the cloud API that the Plejd app also uses. We do not know whether Plejd officially supports that.
 - Not at the same time as hass-plejd.
-- If the device you are connected through drops out, it takes about a minute before Home Assistant is connected through another device. pyplejd first tries the device that is no longer reachable, ten times. During that minute the entities are unavailable. Your Plejd switches keep working.
+- If the device you are connected through drops out, it takes about a minute before Home Assistant is connected through another device. In our test, pyplejd first tried the device that was no longer reachable, about ten times. During that minute the entities are unavailable. Your Plejd switches keep working.
 - There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors.
 - After a restart, a relay (`switch`) shows as unknown until its next state change, see [What you get](#what-you-get).
 - Two commands to the same light right after each other, for example on and off within a few seconds, can lose the second one. The tile then falls back to the real state after 5 seconds.
@@ -157,7 +167,7 @@ Custom integrations have no official quality score from Home Assistant. This is 
 
 ### Tested on a real installation
 
-The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Home Assistant 2026.11 and pyplejd 0.22.1.
+The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Home Assistant 2026.11.2 and pyplejd 0.22.1.
 
 - Lights on, off and dimming from Home Assistant. The device confirms after about 1.1 seconds on average.
 - The immediate tile after a command.
