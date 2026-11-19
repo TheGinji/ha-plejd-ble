@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2078" height="790" viewBox="0 0 2078 790" role="img" aria-labelledby="t d" font-family='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, sans-serif' text-rendering="geometricPrecision">
+<title id="t">Plejd BLE lights, motion sensors and batteries</title><desc id="d">Light tiles with brightness and colour temperature sliders, motion sensors, and the battery level of the motion sensors.</desc>
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6e0ee"/><stop offset="0.55" stop-color="#b3cbea"/><stop offset="1" stop-color="#9aa6dc"/></linearGradient>
+<filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#2a3a7a" flood-opacity="0.12"/></filter>
+</defs>
+<rect width="2078" height="790" fill="url(#bg)"/>
+<defs><linearGradient id="warm1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e1d6cf"/><stop offset="1" stop-color="#f1f1f7"/></linearGradient><linearGradient id="warm2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#decfca"/><stop offset="1" stop-color="#e5e3ea"/></linearGradient></defs>
+<text x="28" y="34" font-size="28" font-weight="500" text-anchor="start" fill="#1b2044" >Toilet</text>
+<rect x="18" y="66" width="492" height="366" rx="50" fill="#edf0fc" filter="url(#shadow)"/>
+<circle cx="74" cy="142" r="36" fill="#c9cbdc"/>
+<g transform="translate(54.00 122.00) scale(1.6667)"><g fill="#1b2044"><circle cx="12" cy="9.4" r="6.4"/><path d="M8.6 13 L15.4 13 L14.7 17.6 L9.3 17.6 Z"/><rect x="9.4" y="18.8" width="5.2" height="1.8" rx="0.9"/></g><path d="M3.5 3.5 L20.5 20.5" stroke="#c9cbdc" stroke-width="4.2" stroke-linecap="round"/><path d="M3.5 3.5 L20.5 20.5" stroke="#1b2044" stroke-width="1.9" stroke-linecap="round"/></g>
+<text x="130" y="138" font-size="30" font-weight="500" text-anchor="start" fill="#1b2044" >LED strip</text>
+<text x="130" y="172" font-size="27" font-weight="400" text-anchor="start" fill="#2a2f56" >Off</text>
+<rect x="42" y="218" width="444" height="82" rx="26" fill="#c8cbdd"/>
+<rect x="42" y="326" width="444" height="82" rx="26" fill="url(#warm1)"/>
+<rect x="526" y="66" width="492" height="366" rx="50" fill="#edf0fc" filter="url(#shadow)"/>
+<circle cx="582" cy="142" r="36" fill="#c9cbdc"/>
+<g transform="translate(562.00 122.00) scale(1.6667)"><g fill="#1b2044"><circle cx="12" cy="9.4" r="6.4"/><path d="M8.6 13 L15.4 13 L14.7 17.6 L9.3 17.6 Z"/><rect x="9.4" y="18.8" width="5.2" height="1.8" rx="0.9"/></g><path d="M3.5 3.5 L20.5 20.5" stroke="#c9cbdc" stroke-width="4.2" stroke-linecap="round"/><path d="M3.5 3.5 L20.5 20.5" stroke="#1b2044" stroke-width="1.9" stroke-linecap="round"/></g>
+<text x="638" y="138" font-size="30" font-weight="500" text-anchor="start" fill="#1b2044" >Ceiling spot 1</text>
+<text x="638" y="172" font-size="27" font-weight="400" text-anchor="start" fill="#2a2f56" >Off</text>
+<rect x="550" y="218" width="444" height="82" rx="26" fill="#c8cbdd"/>
+<rect x="550" y="326" width="444" height="82" rx="26" fill="url(#warm2)"/>
+<text x="1067" y="34" font-size="28" font-weight="500" text-anchor="start" fill="#1b2044" >Battery</text>
+<rect x="1058" y="66" width="1000" height="366" rx="44" fill="#edf0fc" filter="url(#shadow)"/>
+<text x="1090" y="158" font-size="46" font-weight="400" text-anchor="start" fill="#1b2044" >Battery level (WMS-01)</text>
+<g transform="translate(1105.00 237.00) scale(2.0833)"><g fill="none" stroke="#1b2044" stroke-width="2"><rect x="6.5" y="4.2" width="11" height="17.6" rx="2.2"/></g><rect x="9.7" y="1.6" width="4.6" height="2.4" rx="1" fill="#1b2044"/><text x="12" y="17.2" font-size="12" font-weight="700" text-anchor="middle" fill="#1b2044">?</text></g>
+<text x="1204" y="272" font-size="29" font-weight="400" text-anchor="start" fill="#1b2044" >Toilet</text>
+<text x="2024" y="272" font-size="29" font-weight="400" text-anchor="end" fill="#1b2044" >178</text>
+<g transform="translate(1105.00 333.00) scale(2.0833)"><g fill="none" stroke="#1b2044" stroke-width="2"><rect x="6.5" y="4.2" width="11" height="17.6" rx="2.2"/></g><rect x="9.7" y="1.6" width="4.6" height="2.4" rx="1" fill="#1b2044"/><text x="12" y="17.2" font-size="12" font-weight="700" text-anchor="middle" fill="#1b2044">?</text></g>
+<text x="1204" y="368" font-size="29" font-weight="400" text-anchor="start" fill="#1b2044" >Stair cupboard</text>
+<text x="2024" y="368" font-size="29" font-weight="400" text-anchor="end" fill="#1b2044" >178</text>
+<text x="33" y="474" font-size="28" font-weight="500" text-anchor="start" fill="#1b2044" >Motion sensors</text>
+<rect x="24" y="510" width="492" height="112" rx="36" fill="#edf0fc" filter="url(#shadow)"/>
+<g transform="translate(54.00 540.00) scale(2.1667)"><g fill="none" stroke="#1b2044" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="4.4" r="1.7" fill="#1b2044"/><path d="M8.4 9.2 L12.4 8.8 L14.6 12.6 L12 13.2 M10.4 9 L8.6 14 L5.6 19.6 M12 13.2 L13.6 19.4"/><path d="M16.6 5.4 A3.4 3.4 0 0 1 17.6 8 M18.8 3.8 A6 6 0 0 1 20.4 8.4"/></g><path d="M2.8 3.2 L21.4 21.2" stroke="#edf0fc" stroke-width="4.2" stroke-linecap="round"/><path d="M2.8 3.2 L21.4 21.2" stroke="#1b2044" stroke-width="1.9" stroke-linecap="round"/></g>
+<text x="136" y="562" font-size="28" font-weight="500" text-anchor="start" fill="#1b2044" >Toilet</text>
+<text x="136" y="596" font-size="25" font-weight="400" text-anchor="start" fill="#2a2f56" >Clear</text>
+<rect x="532" y="510" width="492" height="112" rx="36" fill="#edf0fc" filter="url(#shadow)"/>
+<g transform="translate(562.00 540.00) scale(2.1667)"><g fill="none" stroke="#1b2044" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.6" cy="4.4" r="1.7" fill="#1b2044"/><path d="M8.4 9.2 L12.4 8.8 L14.6 12.6 L12 13.2 M10.4 9 L8.6 14 L5.6 19.6 M12 13.2 L13.6 19.4"/><path d="M16.6 5.4 A3.4 3.4 0 0 1 17.6 8 M18.8 3.8 A6 6 0 0 1 20.4 8.4"/></g><path d="M2.8 3.2 L21.4 21.2" stroke="#edf0fc" stroke-width="4.2" stroke-linecap="round"/><path d="M2.8 3.2 L21.4 21.2" stroke="#1b2044" stroke-width="1.9" stroke-linecap="round"/></g>
+<text x="644" y="562" font-size="28" font-weight="500" text-anchor="start" fill="#1b2044" >Stair cupboard</text>
+<text x="644" y="596" font-size="25" font-weight="400" text-anchor="start" fill="#2a2f56" >Clear</text>
+<text x="1067" y="474" font-size="28" font-weight="500" text-anchor="start" fill="#1b2044" >Hall</text>
+<rect x="1058" y="510" width="1000" height="240" rx="50" fill="#edf0fc" filter="url(#shadow)"/>
+<g transform="translate(1093.00 565.00) scale(1.7500)"><g fill="#1b2044"><circle cx="12" cy="9.4" r="6.4"/><path d="M8.6 13 L15.4 13 L14.7 17.6 L9.3 17.6 Z"/><rect x="9.4" y="18.8" width="5.2" height="1.8" rx="0.9"/></g></g>
+<text x="1170" y="582" font-size="30" font-weight="500" text-anchor="start" fill="#1b2044" >Ceiling lamp</text>
+<text x="1170" y="616" font-size="27" font-weight="400" text-anchor="start" fill="#2a2f56" >34%</text>
+<rect x="1082" y="650" width="952" height="78" rx="26" fill="#e4e8f7"/>
+<rect x="1406" y="670" width="9" height="40" rx="4.5" fill="#ffffff"/>
+</svg>
