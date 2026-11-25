@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="790" viewBox="0 0 1240 790" role="img" aria-labelledby="t d" font-family='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, sans-serif' text-rendering="geometricPrecision">
+<title id="t">Plejd BLE options: choosing the Bluetooth connection points</title><desc id="d">The options dialog twice. Just after connecting, the device you are connected through shows a link symbol, a green dot and its signal strength. After fifteen minutes it shows the link symbol and a dash, because it sends no signal data while the connection is open.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6e0ee"/><stop offset="0.55" stop-color="#b3cbea"/><stop offset="1" stop-color="#9aa6dc"/></linearGradient><filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#2a3a7a" flood-opacity="0.12"/></filter></defs>
+<rect width="1240" height="790" fill="url(#bg)"/>
+<text x="48" y="52" font-size="30" font-weight="600" fill="#1b2044">Just after connecting</text>
+<rect x="40" y="80" width="560" height="690" rx="40" fill="#f1f3fa" filter="url(#shadow)"/>
+<path d="M79 121 L101 143 M101 121 L79 143" stroke="#1b2044" stroke-width="4" stroke-linecap="round"/>
+<text x="140" y="143" font-size="30" font-weight="500" fill="#1b2044">Bluetooth connection points</text>
+<text x="74" y="208" font-size="22" fill="#2a2f56">Allowed devices</text>
+<rect x="74" y="237" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 252 L87 258 L98 246" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="137" cy="252" r="13" fill="#d9372b"/>
+<text x="162" y="260" font-size="22" fill="#1b2044">-83 dBm Ceiling spot 2 (Toilet)</text>
+<rect x="74" y="295" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 310 L87 316 L98 304" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="137" cy="310" r="13" fill="#e8912d"/>
+<text x="162" y="318" font-size="22" fill="#1b2044">-67 dBm Ceiling spot 1 (Kitchen)</text>
+<rect x="74" y="353" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 368 L87 374 L98 362" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(124 353)" fill="none" stroke="#6b7088" stroke-width="3.4" stroke-linecap="round"><rect x="1.5" y="12" width="17" height="9" rx="4.5" transform="rotate(-45 10 16.5)"/><rect x="11.5" y="9" width="17" height="9" rx="4.5" transform="rotate(-45 20 13.5)"/></g>
+<circle cx="181" cy="368" r="13" fill="#3fae2a"/>
+<text x="206" y="376" font-size="22" fill="#1b2044">-57 dBm Ceiling spot 6 (Kitchen)</text>
+<rect x="74" y="411" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 426 L87 432 L98 420" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="137" cy="426" r="13" fill="#e8912d"/>
+<text x="162" y="434" font-size="22" fill="#1b2044">-76 dBm Ceiling spot 5 (Kitchen)</text>
+<rect x="74" y="469" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 484 L87 490 L98 478" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="137" cy="484" r="13" fill="#3fae2a"/>
+<text x="162" y="492" font-size="22" fill="#1b2044">-63 dBm Ceiling spot 4 (Kitchen)</text>
+<rect x="74" y="527" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 542 L87 548 L98 536" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="137" cy="542" r="13" fill="#3fae2a"/>
+<text x="162" y="550" font-size="22" fill="#1b2044">-62 dBm Ceiling spot 3 (Kitchen)</text>
+<rect x="74" y="585" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M81 600 L87 606 L98 594" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="137" cy="600" r="13" fill="#e8912d"/>
+<text x="162" y="608" font-size="22" fill="#1b2044">-78 dBm Ceiling spot 2 (Kitchen)</text>
+<rect x="416" y="682" width="150" height="56" rx="28" fill="#439fc9"/>
+<text x="491" y="719" font-size="24" font-weight="500" text-anchor="middle" fill="#fff">Submit</text>
+<text x="668" y="52" font-size="30" font-weight="600" fill="#1b2044">After fifteen minutes</text>
+<rect x="660" y="80" width="560" height="690" rx="40" fill="#f1f3fa" filter="url(#shadow)"/>
+<path d="M699 121 L721 143 M721 121 L699 143" stroke="#1b2044" stroke-width="4" stroke-linecap="round"/>
+<text x="760" y="143" font-size="30" font-weight="500" fill="#1b2044">Bluetooth connection points</text>
+<text x="694" y="208" font-size="22" fill="#2a2f56">Allowed devices</text>
+<rect x="694" y="237" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 252 L707 258 L718 246" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="757" cy="252" r="13" fill="#e8912d"/>
+<text x="782" y="260" font-size="22" fill="#1b2044">-68 dBm Ceiling spot 2 (Toilet)</text>
+<rect x="694" y="295" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 310 L707 316 L718 304" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="757" cy="310" r="13" fill="#e8912d"/>
+<text x="782" y="318" font-size="22" fill="#1b2044">-68 dBm Ceiling spot 1 (Kitchen)</text>
+<rect x="694" y="353" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 368 L707 374 L718 362" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(744 353)" fill="none" stroke="#6b7088" stroke-width="3.4" stroke-linecap="round"><rect x="1.5" y="12" width="17" height="9" rx="4.5" transform="rotate(-45 10 16.5)"/><rect x="11.5" y="9" width="17" height="9" rx="4.5" transform="rotate(-45 20 13.5)"/></g>
+<text x="788" y="376" font-size="22" fill="#1b2044">&#8211; dBm Ceiling spot 6 (Kitchen)</text>
+<rect x="694" y="411" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 426 L707 432 L718 420" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="757" cy="426" r="13" fill="#e8912d"/>
+<text x="782" y="434" font-size="22" fill="#1b2044">-76 dBm Ceiling spot 5 (Kitchen)</text>
+<rect x="694" y="469" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 484 L707 490 L718 478" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="757" cy="484" r="13" fill="#3fae2a"/>
+<text x="782" y="492" font-size="22" fill="#1b2044">-65 dBm Ceiling spot 4 (Kitchen)</text>
+<rect x="694" y="527" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 542 L707 548 L718 536" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="757" cy="542" r="13" fill="#3fae2a"/>
+<text x="782" y="550" font-size="22" fill="#1b2044">-61 dBm Ceiling spot 3 (Kitchen)</text>
+<rect x="694" y="585" width="30" height="30" rx="7" fill="#439fc9"/>
+<path d="M701 600 L707 606 L718 594" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="757" cy="600" r="13" fill="#e8912d"/>
+<text x="782" y="608" font-size="22" fill="#1b2044">-80 dBm Ceiling spot 2 (Kitchen)</text>
+<rect x="1036" y="682" width="150" height="56" rx="28" fill="#439fc9"/>
+<text x="1111" y="719" font-size="24" font-weight="500" text-anchor="middle" fill="#fff">Submit</text>
+</svg>
