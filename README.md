@@ -62,7 +62,7 @@ Languages: Dutch and English. German and French texts are included too, but they
 
 **Options.** Via the three dots next to the integration, under **Configure**, you choose which devices on mains power may serve as the Bluetooth entry point. Remove a device if the Bluetooth signal there is weak or unstable. At least one must remain.
 
-Next to each device you see the signal strength that Home Assistant currently receives from that device, averaged over the last ten measurements, roughly the last ten minutes. 🟢 is good (-65 dBm or better), 🟠 is fair (down to -80 dBm), 🔴 is poor (weaker than -80 dBm) and ⚪ means there is no recent measurement. These are Bluetooth rules of thumb, not Plejd values. They describe what your Bluetooth adapter or proxy hears, not what the devices hear from each other.
+Next to each device you see the signal strength that Home Assistant currently receives from that device, averaged over the last ten measurements, roughly the last ten minutes. 🟢 is good (-65 dBm or better), 🟠 is fair (down to -80 dBm), 🔴 is poor (weaker than -80 dBm) and ⚪ means there is no recent measurement. For the device you are connected through right now, 🔗 takes the place of ⚪: it sends no signal data while the connection is open, so after the first fifteen minutes there is no measurement for it. These are Bluetooth rules of thumb, not Plejd values. They describe what your Bluetooth adapter or proxy hears, not what the devices hear from each other.
 
 Your password is stored in Home Assistant. The Plejd cloud is only used to fetch your device list and the Bluetooth keys. When Home Assistant restarts, the integration uses the stored list, as long as it is at most seven days old. If you reload the integration yourself, or tap **Refresh device list**, the list is fetched fresh. Control itself always goes over Bluetooth.
 
@@ -123,7 +123,7 @@ When you control a light or a relay, Home Assistant shows the new state right aw
 
 On/off and brightness are requested by Plejd BLE at every connection. For relays this does not work yet: pyplejd 0.22.1, the version we use, drops the relay's answer, so a relay shows as unknown after a restart until its next state change. The fix is merged in the pyplejd repository, but it is not in 0.22.1. Plejd BLE will use it as soon as a pyplejd release contains it. Plejd only reports color temperature when it changes. That is why Plejd BLE keeps the last known value, even when the light is off. If the color was changed in the Plejd app in the meantime, the value is only correct again after the next change.
 
-Plejd BLE measures signal strength and last-seen time itself, once a minute, for every device on mains power. Home Assistant does not pass on a message that is identical to the previous one, and Plejd devices keep sending the same one, so Plejd BLE asks for the next message every minute. Last seen is therefore accurate to the minute. This is deliberately not the value from pyplejd: that one keeps the strongest value ever seen and so says nothing about now. Battery-powered devices rarely report, so this is not meant for them. The device you are connected through is an exception too: in our measurements its last seen and signal strength stay at the values from the start of the connection, probably because a device does not advertise while it holds a connection (our assumption). The battery level is shown raw, because pyplejd itself is not sure whether the scale is 0 to 255. A sensor rarely reports its battery, so the last value stays until a new one arrives. After the hardware test we will check whether a percentage can be made of it.
+Plejd BLE measures signal strength and last-seen time itself, once a minute, for every device on mains power. Home Assistant does not pass on a message that is identical to the previous one, and Plejd devices keep sending the same one, so Plejd BLE asks for the next message every minute. Last seen is therefore accurate to the minute. This is deliberately not the value from pyplejd: that one keeps the strongest value ever seen and so says nothing about now. Battery-powered devices rarely report, so this is not meant for them. The device you are connected through is different: in our measurements its last seen and signal strength stay at the values from the start of the connection, probably because a device does not advertise while it holds a connection (our assumption). For that device, last seen is therefore the time of the last successful keep-alive, which runs about every three minutes, and the signal strength is unknown once its measurement is older than fifteen minutes. The battery level is shown raw, because pyplejd itself is not sure whether the scale is 0 to 255. A sensor rarely reports its battery, so the last value stays until a new one arrives. After the hardware test we will check whether a percentage can be made of it.
 
 ## Use cases
 
@@ -209,7 +209,7 @@ Remove passwords, email addresses, addresses and Bluetooth addresses from anythi
 - The integration uses the cloud API that the Plejd app also uses. We do not know whether Plejd officially supports that.
 - Not at the same time as hass-plejd.
 - If the device you are connected through drops out, it takes about a minute before Home Assistant is connected through another device. In our test, pyplejd first tried the device that was no longer reachable, about ten times. During that minute the entities are unavailable. Your Plejd switches keep working.
-- There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors, except for the device you are connected through.
+- There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors. For the device you are connected through, that is the last successful keep-alive, so it can be up to three minutes behind.
 - After a restart, a relay (`switch`) shows as unknown until its next state change, see [What you get](#what-you-get).
 - Two commands to the same light right after each other, for example on and off within a few seconds, can lose the second one. The tile then falls back to the real state after 5 seconds.
 - Everything is built on pyplejd, which is maintained by one person. We use one fixed version, and a test checks that it still fits.
@@ -236,7 +236,7 @@ Home Assistant rates its own integrations in four levels: Bronze, Silver, Gold a
 
 | Level | Rules met | What is open |
 | --- | --- | --- |
-| Bronze | 19 of 20 | The pyplejd package cannot be traced to its public repository. Only its maintainer can solve that |
+| Bronze | 19 of 20 | The pyplejd package is uploaded to PyPI by hand, without a tag per version, so it cannot be traced to its public repository. Only its maintainer can solve that |
 | Silver | 10 of 10 | Nothing |
 | Gold | 20 of 21 | New devices only appear after a refresh or a reload |
 | Platinum | 1 of 3 | pyplejd makes its own web session, and strict type checking is not set up yet |
