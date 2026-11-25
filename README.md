@@ -227,8 +227,21 @@ Custom integrations have no official quality score from Home Assistant. This is 
 - The tests run on every change and every week on the newest Home Assistant, and also on the oldest supported version. An extra check on the upcoming beta version warns earlier about changes, but blocks nothing.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) and the HACS check, without exceptions. Both also run every week.
 - Tests that check that the parts of pyplejd we use do not change.
-- [quality_scale.yaml](custom_components/plejd_ble/quality_scale.yaml): our own assessment against the [Home Assistant Integration Quality Scale](https://www.home-assistant.io/docs/quality_scale/), rule by rule. It is not an official score. Most rules for Bronze, Silver and Gold are met. The open points are that the pyplejd package cannot be traced to its source (up to its maintainer), that new devices only appear after a refresh, and strict typing and sharing Home Assistant's web session (both Platinum).
+- [quality_scale.yaml](custom_components/plejd_ble/quality_scale.yaml): our own assessment against the [Home Assistant Integration Quality Scale](https://www.home-assistant.io/docs/quality_scale/), rule by rule. It is not an official score. The result per level is in the table below.
 - A trial on one real installation, see below.
+
+### Quality scale
+
+Home Assistant rates its own integrations in four levels: Bronze, Silver, Gold and Platinum. Custom integrations are not rated, so this is our own count from [quality_scale.yaml](custom_components/plejd_ble/quality_scale.yaml). A rule that does not apply to this integration counts as met, for example because it has no service actions.
+
+| Level | Rules met | What is open |
+| --- | --- | --- |
+| Bronze | 19 of 20 | The pyplejd package cannot be traced to its public repository. Only its maintainer can solve that |
+| Silver | 10 of 10 | Nothing |
+| Gold | 20 of 21 | New devices only appear after a refresh or a reload |
+| Platinum | 1 of 3 | pyplejd makes its own web session, and strict type checking is not set up yet |
+
+A level counts only when all its rules and those of the levels below are met. Because of the one open Bronze rule we do not claim a level yet.
 
 ### Tested on a real installation
 
@@ -239,6 +252,7 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 - Panel buttons, motion sensors and scenes, also when the scene is activated from a switch or the Plejd app.
 - A restart of Home Assistant: commands to lights that are not the gateway work straight away, both with the hall light and with the stair cupboard relay as the Bluetooth entry point.
 - Switching the Bluetooth entry point in the options.
+- Reloading the integration after ten days with an old device list: the list was fetched fresh from the Plejd cloud, without a notice under Repairs.
 - Simultaneous use with the Plejd app and a GWY-01.
 - More than 30 hours without a single failed keep-alive, also at night.
 - Sudden failure of the device that Home Assistant is connected through (power to the hall light switched off): Home Assistant was back through another device after about a minute, and lights that are not the gateway stayed controllable afterwards.
