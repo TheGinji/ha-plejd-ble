@@ -26,9 +26,11 @@ async def async_get_config_entry_diagnostics(
     """
     site = entry.runtime_data
     devices = []
+    connected = site.connected_address()
     for device in site.devices:
         hardware = device.hw
         reading = site.signal.get(device.ble_mac.upper())
+        heard = site.last_heard(device)
         devices.append(
             {
                 "model": device.hardware,
@@ -41,6 +43,8 @@ async def async_get_config_entry_diagnostics(
                 "is_gateway": hardware.is_gateway if hardware else None,
                 "rssi_now": reading.rssi if reading else None,
                 "last_seen": reading.seen_at.isoformat() if reading else None,
+                "last_heard": heard.isoformat() if heard else None,
+                "connected_unit": device.BLEaddress == connected,
             }
         )
     return {
