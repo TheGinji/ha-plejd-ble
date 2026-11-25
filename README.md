@@ -77,6 +77,10 @@ Languages: Dutch and English. German and French texts are included too, but they
 
 Next to each device you see the signal strength that Home Assistant currently receives from that device, averaged over the last ten measurements, roughly the last ten minutes. 🟢 is good (-65 dBm or better), 🟠 is fair (down to -80 dBm), 🔴 is poor (weaker than -80 dBm) and ⚪ means there is no recent measurement. The device you are connected through right now has 🔗 in front. It sends no signal data while the connection is open, so it shows its measurement from the start of the connection for the first fifteen minutes, and after that only a dash. These are Bluetooth rules of thumb, not Plejd values. They describe what your Bluetooth adapter or proxy hears, not what the devices hear from each other.
 
+![The options dialog just after connecting and after fifteen minutes](https://raw.githubusercontent.com/TheGinji/ha-plejd-ble/main/docs/images/options.svg)
+
+The same dialog on the maker's installation, redrawn with English names: just after connecting, and fifteen minutes later without a new connection.
+
 Your password is stored in Home Assistant. The Plejd cloud is only used to fetch your device list and the Bluetooth keys. When Home Assistant restarts, the integration uses the stored list, as long as it is at most seven days old. If you reload the integration yourself, or tap **Refresh device list**, the list is fetched fresh. Control itself always goes over Bluetooth.
 
 ## Supported devices
@@ -236,7 +240,7 @@ Remove the integration via **Settings → Devices & services**. The locally stor
 
 Custom integrations have no official quality score from Home Assistant. This is what we checked ourselves:
 
-- More than 60 automated tests, with at least 95% coverage. The workflow fails a run below that limit.
+- More than 140 automated tests, with at least 95% coverage. The workflow fails a run below that limit.
 - The tests run on every change and every week on the newest Home Assistant, and also on the oldest supported version. An extra check on the upcoming beta version warns earlier about changes, but blocks nothing.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) and the HACS check, without exceptions. Both also run every week.
 - Tests that check that the parts of pyplejd we use do not change.
@@ -272,6 +276,8 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 - Version 0.2.17: more than six days connected through one device, without a failed keep-alive, without an unprocessable message and without a repair notice.
 - The guard against unprocessable messages: an empty message from the mesh, which makes pyplejd fail, was caught on the real installation. Only that one message was lost, and the connection kept working.
 - The signal sensors and last seen.
+- Version 0.2.19 on Home Assistant 2026.11.3: the options list marks the device you are connected through with 🔗, together with its measurement from the start of the connection. Fifteen minutes later, without a new connection, it showed 🔗 and a dash, while the measurements of the other devices kept changing.
+- A restart of Home Assistant with a stored device list that was eleven hours old: the integration started from the stored list, and the last cloud sync still said eleven hours.
 
 **Not tested yet:**
 - Relay outputs (the `switch` entity) on real hardware. They are covered by automated tests, but the maker has no device that Plejd reports as a relay. His REL-01-2P is set up as a light in the Plejd app, so it appears as a `light`. The relay state after a restart is a known gap, see [What you get](#what-you-get).
