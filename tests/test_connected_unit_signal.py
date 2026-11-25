@@ -45,11 +45,12 @@ def connect_through(entry: MockConfigEntry, identifier: str) -> str:
     return address
 
 
-def test_signal_label_marks_the_connected_unit_only_without_a_measurement() -> None:
-    """Zonder meting een schakel in plaats van een witte stip, met meting de gewone stip."""
+def test_signal_label_always_marks_the_connected_unit() -> None:
+    """Het verbonden apparaat heeft altijd een schakel, met of zonder meting."""
     assert signal_label(None, connected=True) == f"{LINK} – dBm"
+    assert signal_label(-60, connected=True) == f"{LINK} {GREEN} -60 dBm"
     assert signal_label(None) == f"{WHITE} – dBm"
-    assert signal_label(-60, connected=True) == f"{GREEN} -60 dBm"
+    assert signal_label(-60) == f"{GREEN} -60 dBm"
 
 
 async def test_options_mark_the_connected_unit(
@@ -66,10 +67,10 @@ async def test_options_mark_the_connected_unit(
     assert labels["A0B1C2000002"].startswith(f"{WHITE} ")
 
 
-async def test_options_keep_a_fresh_measurement_of_the_connected_unit(
+async def test_options_show_a_fresh_measurement_of_the_connected_unit_too(
     hass: HomeAssistant, loaded_entry: MockConfigEntry, mocks: SimpleNamespace
 ) -> None:
-    """Vlak na het verbinden is er nog een meting, en die tonen we gewoon."""
+    """Vlak na het verbinden is er nog een meting: de schakel staat er dan ook bij."""
     address = connect_through(loaded_entry, DIMMER)
     callback = mocks.bluetooth.register_callback.call_args.args[1]
     callback(service_info(DIMMER_ADDRESS, -55), None)
@@ -78,7 +79,7 @@ async def test_options_keep_a_fresh_measurement_of_the_connected_unit(
     selector = next(iter(result["data_schema"].schema.values()))
     labels = {option["value"]: option["label"] for option in selector.config["options"]}
 
-    assert labels[address].startswith(f"{GREEN} -55 dBm")
+    assert labels[address].startswith(f"{LINK} {GREEN} -55 dBm")
 
 
 async def test_a_ping_is_recorded_for_the_connected_unit(

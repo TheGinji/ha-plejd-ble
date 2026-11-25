@@ -28,15 +28,17 @@ def signal_label(rssi: int | None, connected: bool = False) -> str:
     """Geef een kort label: een gekleurde stip en de signaalsterkte in dBm.
 
     Het apparaat waarlangs we verbonden zijn, zendt niets uit zolang de verbinding
-    openstaat. Heeft het geen recente meting, dan tonen we een schakel in plaats
-    van een witte stip, want het ontbreken van een meting zegt hier niets.
+    openstaat. Dat apparaat krijgt altijd een schakel voorop. Heeft het geen
+    recente meting, dan staat er een streepje in plaats van een witte stip, want
+    het ontbreken van een meting zegt hier niets.
     """
     if rssi is None:
-        return f"{_LINK if connected else _WHITE} – dBm"
+        return f"{_LINK} – dBm" if connected else f"{_WHITE} – dBm"
     if rssi >= GOOD_RSSI:
         dot = _GREEN
     elif rssi >= FAIR_RSSI:
         dot = _ORANGE
     else:
         dot = _RED
-    return f"{dot} {rssi} dBm"
+    label = f"{dot} {rssi} dBm"
+    return f"{_LINK} {label}" if connected else label
