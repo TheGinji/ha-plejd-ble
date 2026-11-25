@@ -5,11 +5,14 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import timedelta
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+
+from custom_components.plejd_ble.site import PlejdSite
 
 from . import setup_integration
 
@@ -85,6 +88,17 @@ async def test_options_flow_needs_a_running_integration(
 
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "not_loaded"
+
+
+async def test_options_flow_without_powered_devices(
+    hass: HomeAssistant, loaded_entry: MockConfigEntry
+) -> None:
+    """Zonder apparaten op netstroom is er niets om uit te kiezen."""
+    with patch.object(PlejdSite, "gateway_candidates", return_value={}):
+        result = await hass.config_entries.options.async_init(loaded_entry.entry_id)
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "no_gateways"
 
 
 async def test_blocked_devices_are_used_at_startup(

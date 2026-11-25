@@ -16,12 +16,7 @@ rules:
   brands: done
   common-modules: done
   config-flow: done
-  config-flow-test-coverage:
-    status: todo
-    comment: >-
-      The tests cover the config flow, but the coverage of config_flow.py is not
-      measured separately. The workflow only requires 95% for the whole
-      integration, and this rule asks for 100% of the config flow.
+  config-flow-test-coverage: done
   dependency-transparency:
     status: todo
     comment: >-

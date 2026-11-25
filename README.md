@@ -227,7 +227,7 @@ Custom integrations have no official quality score from Home Assistant. This is 
 - The tests run on every change and every week on the newest Home Assistant, and also on the oldest supported version. An extra check on the upcoming beta version warns earlier about changes, but blocks nothing.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) and the HACS check, without exceptions. Both also run every week.
 - Tests that check that the parts of pyplejd we use do not change.
-- [quality_scale.yaml](custom_components/plejd_ble/quality_scale.yaml): our own assessment against the [Home Assistant Integration Quality Scale](https://www.home-assistant.io/docs/quality_scale/), rule by rule. It is not an official score. Most rules for Bronze, Silver and Gold are met. The open points are that the pyplejd package cannot be traced to its source (up to its maintainer), that the test coverage of the config flow is not measured separately, that new devices only appear after a refresh, and strict typing and sharing Home Assistant's web session (both Platinum).
+- [quality_scale.yaml](custom_components/plejd_ble/quality_scale.yaml): our own assessment against the [Home Assistant Integration Quality Scale](https://www.home-assistant.io/docs/quality_scale/), rule by rule. It is not an official score. Most rules for Bronze, Silver and Gold are met. The open points are that the pyplejd package cannot be traced to its source (up to its maintainer), that new devices only appear after a refresh, and strict typing and sharing Home Assistant's web session (both Platinum).
 - A trial on one real installation, see below.
 
 ### Tested on a real installation
