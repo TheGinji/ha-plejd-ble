@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Bluetooth-Verbindungspunkte",
-        "description": "Home Assistant verbindet sich über eines der netzbetriebenen Geräte mit deinen Plejd-Geräten. Wähle, welche davon verwendet werden dürfen. Entferne ein Gerät, wenn sein Bluetooth-Signal schwach oder instabil ist.",
+        "description": "Home Assistant verbindet sich über eines der netzbetriebenen Geräte mit deinen Plejd-Geräten. Wähle, welche davon verwendet werden dürfen. Entferne ein Gerät, wenn sein Bluetooth-Signal schwach oder instabil ist. 🔗 kennzeichnet das Gerät, über das du gerade verbunden bist. Es sendet keine Signaldaten, solange die Verbindung besteht.",
         "data": {
           "allowed_devices": "Erlaubte Geräte"
         }

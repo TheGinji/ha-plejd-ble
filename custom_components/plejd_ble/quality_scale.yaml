@@ -20,10 +20,10 @@ rules:
   dependency-transparency:
     status: todo
     comment: >-
-      The pyplejd package on PyPI cannot be traced to its public repository. The
-      repository has no tag for the published version, and the package lacks a
-      relay fix that is merged in the repository. Only the maintainer of pyplejd
-      can solve this.
+      The pyplejd package is uploaded to PyPI by hand, not built in public CI, and
+      its repository has no tag for the published versions. The package on PyPI
+      also lacks a relay fix that the repository has. Only the maintainer of
+      pyplejd can solve this.
   docs-actions:
     status: exempt
     comment: The integration has no service actions of its own.

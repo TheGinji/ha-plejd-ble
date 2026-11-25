@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Bluetooth connection points",
-        "description": "Home Assistant connects to your Plejd devices through one of the devices that run on mains power. Choose which of them may be used. Untick a device if its Bluetooth signal is weak or unstable.",
+        "description": "Home Assistant connects to your Plejd devices through one of the devices that run on mains power. Choose which of them may be used. Untick a device if its Bluetooth signal is weak or unstable. 🔗 marks the device you are connected through now. It sends no signal data while the connection is open.",
         "data": {
           "allowed_devices": "Allowed devices"
         }

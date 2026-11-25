@@ -20,13 +20,19 @@ FAIR_RSSI = -80
 _GREEN = "\U0001F7E2"
 _ORANGE = "\U0001F7E0"
 _RED = "\U0001F534"
-_WHITE = "\u26AA"
+_WHITE = "⚪"
+_LINK = "\U0001F517"
 
 
-def signal_label(rssi: int | None) -> str:
-    """Geef een kort label: een gekleurde stip en de signaalsterkte in dBm."""
+def signal_label(rssi: int | None, connected: bool = False) -> str:
+    """Geef een kort label: een gekleurde stip en de signaalsterkte in dBm.
+
+    Het apparaat waarlangs we verbonden zijn, zendt niets uit zolang de verbinding
+    openstaat. Heeft het geen recente meting, dan tonen we een schakel in plaats
+    van een witte stip, want het ontbreken van een meting zegt hier niets.
+    """
     if rssi is None:
-        return f"{_WHITE} \u2013 dBm"
+        return f"{_LINK if connected else _WHITE} – dBm"
     if rssi >= GOOD_RSSI:
         dot = _GREEN
     elif rssi >= FAIR_RSSI:

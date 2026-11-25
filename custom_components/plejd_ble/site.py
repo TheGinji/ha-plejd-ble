@@ -143,6 +143,10 @@ class PlejdSite:
         # niet het rssi-veld van pyplejd, want dat bewaart de sterkste waarde ooit.
         self.signal: dict[str, SignalReading] = {}
         self._rssi_history: dict[str, deque[int]] = {}
+        # Per apparaat (zoals pyplejd het adres schrijft) wanneer het voor het laatst
+        # antwoordde op onze keep-alive. Zo weten we ook dat het verbonden apparaat
+        # leeft, terwijl het zelf niets uitzendt.
+        self.link_heard: dict[str, datetime] = {}
         self.connection_events: deque[tuple[datetime, bool]] = deque(maxlen=20)
         self.ping_failures = 0
         self.last_ping_failure: datetime | None = None
@@ -419,16 +423,16 @@ class PlejdSite:
     def gateway_choices(self) -> dict[str, str]:
         """Geef de Bluetooth-ingangen met hun signaalsterkte, voor het optiesscherm."""
         names = self.gateway_candidates()
-        return {
-            address: (
-                f"{signal_label(self.average_rssi(device.ble_mac.upper()))}  "
-                f"{names[address]}"
-            )
-            for address, device in self.powered_units().items()
-        }
+        connected = self.connected_address()
+        choices: dict[str, str] = {}
+        for address, device in self.powered_units().items():
+            rssi = self.average_rssi(device.ble_mac.upper())
+            label = signal_label(rssi, connected=address == connected)
+            choices[address] = f"{label}  {names[address]}"
+        return choices
 
-    def connected_via(self) -> str | None:
-        """Geef de naam van het apparaat waarlangs we nu verbonden zijn.
+    def connected_address(self) -> str | None:
+        """Geef het adres van het apparaat waarlangs we nu verbonden zijn.
 
         pyplejd wist de markering is_gateway niet als de verbinding naar een ander
         apparaat wisselt, dus die kunnen we niet gebruiken. We vragen het aan de
@@ -437,7 +441,48 @@ class PlejdSite:
         node = getattr(self.manager.mesh, "_gateway_node", None)
         if node is None or not self.manager.connected:
             return None
-        return self.gateway_candidates().get(node.BLEaddress)
+        return node.BLEaddress
+
+    def connected_via(self) -> str | None:
+        """Geef de naam van het apparaat waarlangs we nu verbonden zijn."""
+        address = self.connected_address()
+        return self.gateway_candidates().get(address) if address else None
+
+    def last_heard(self, device: Any) -> datetime | None:
+        """Geef wanneer we dit apparaat het laatst hoorden.
+
+        Dat is de laatste melding die we van het apparaat ontvingen, of het
+        laatste geslaagde antwoord op onze keep-alive als dat later was. Dat tweede
+        telt voor het apparaat waarlangs we verbonden zijn.
+        """
+        reading = self.signal.get(device.ble_mac.upper())
+        moments = [
+            moment
+            for moment in (
+                reading.seen_at if reading else None,
+                self.link_heard.get(device.BLEaddress),
+            )
+            if moment is not None
+        ]
+        return max(moments, default=None)
+
+    def current_rssi(self, device: Any) -> int | None:
+        """Geef de signaalsterkte bij de laatste melding van dit apparaat.
+
+        Het apparaat waarlangs we verbonden zijn, zendt niets uit zolang de
+        verbinding openstaat. Zijn laatste meting is dan van het begin van de
+        verbinding. Is die te oud, dan geven we niets in plaats van een
+        verouderde waarde.
+        """
+        reading = self.signal.get(device.ble_mac.upper())
+        if reading is None:
+            return None
+        if (
+            device.BLEaddress == self.connected_address()
+            and dt_util.utcnow() - reading.seen_at > SIGNAL_MAX_AGE
+        ):
+            return None
+        return reading.rssi
 
     @callback
     def note_command(self) -> None:
@@ -648,6 +693,8 @@ class PlejdSite:
             _LOGGER.debug("Fout bij de keep-alive", exc_info=True)
             alive = False
         if alive:
+            if (address := self.connected_address()) is not None:
+                self.link_heard[address] = dt_util.utcnow()
             if self._failed_pings_in_a_row >= 2:
                 _LOGGER.info("De verbinding met het Plejd-mesh is hersteld")
             self._failed_pings_in_a_row = 0
