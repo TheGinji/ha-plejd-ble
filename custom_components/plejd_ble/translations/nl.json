@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Bluetooth-ingangen",
-        "description": "Home Assistant maakt verbinding met je Plejd-apparaten via een van de apparaten die op netstroom werken. Kies welke daarvoor gebruikt mogen worden. Haal een apparaat weg als het Bluetooth-signaal zwak of onstabiel is.",
+        "description": "Home Assistant maakt verbinding met je Plejd-apparaten via een van de apparaten die op netstroom werken. Kies welke daarvoor gebruikt mogen worden. Haal een apparaat weg als het Bluetooth-signaal zwak of onstabiel is. 🔗 is het apparaat waarlangs je nu verbonden bent. Het stuurt geen signaalgegevens zolang de verbinding openstaat.",
         "data": {
           "allowed_devices": "Toegestane apparaten"
         }

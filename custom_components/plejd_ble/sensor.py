@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .entity import PlejdEntity
-from .site import PlejdBleConfigEntry, PlejdSite, SignalReading
+from .site import PlejdBleConfigEntry, PlejdSite
 
 PARALLEL_UPDATES = 0
 
@@ -149,14 +149,9 @@ class PlejdSignalSensor(SensorEntity):
     def __init__(self, site: PlejdSite, device: Any) -> None:
         """Koppel de sensor aan het apparaat."""
         self._site = site
-        self._address = device.ble_mac.upper()
+        self._device = device
         self._attr_unique_id = f"{':'.join(device.identifier)}:{self._key}"
         self._attr_device_info = site.entity_device_info(device)
-
-    @property
-    def reading(self) -> SignalReading | None:
-        """Geef de laatste meting van dit apparaat."""
-        return self._site.signal.get(self._address)
 
 
 class PlejdLastSeen(PlejdSignalSensor):
@@ -169,7 +164,7 @@ class PlejdLastSeen(PlejdSignalSensor):
     @property
     def native_value(self) -> datetime | None:
         """Geef het tijdstip, of niets als we het apparaat nog niet hoorden."""
-        return reading.seen_at if (reading := self.reading) else None
+        return self._site.last_heard(self._device)
 
 
 class PlejdSignalStrength(PlejdSignalSensor):
@@ -184,4 +179,4 @@ class PlejdSignalStrength(PlejdSignalSensor):
     @property
     def native_value(self) -> int | None:
         """Geef de signaalsterkte, of niets als we het apparaat nog niet hoorden."""
-        return reading.rssi if (reading := self.reading) else None
+        return self._site.current_rssi(self._device)

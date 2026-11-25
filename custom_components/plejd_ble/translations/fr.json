@@ -50,7 +50,7 @@
     "step": {
       "init": {
         "title": "Points de connexion Bluetooth",
-        "description": "Home Assistant se connecte à vos appareils Plejd par l'intermédiaire d'un des appareils alimentés par le secteur. Choisissez ceux qui peuvent être utilisés. Décochez un appareil si son signal Bluetooth est faible ou instable.",
+        "description": "Home Assistant se connecte à vos appareils Plejd par l'intermédiaire d'un des appareils alimentés par le secteur. Choisissez ceux qui peuvent être utilisés. Décochez un appareil si son signal Bluetooth est faible ou instable. 🔗 indique l'appareil par lequel vous êtes connecté en ce moment. Il n'envoie pas de données de signal tant que la connexion est ouverte.",
         "data": {
           "allowed_devices": "Appareils autorisés"
         }
