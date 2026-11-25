@@ -17,11 +17,11 @@ SIGNAL_REFRESH_INTERVAL = timedelta(minutes=1)
 GOOD_RSSI = -65
 FAIR_RSSI = -80
 
-_GREEN = "\\U0001F7E2"
-_ORANGE = "\\U0001F7E0"
-_RED = "\\U0001F534"
+_GREEN = "\U0001F7E2"
+_ORANGE = "\U0001F7E0"
+_RED = "\U0001F534"
 _WHITE = "⚪"
-_LINK = "\\U0001F517"
+_LINK = "\U0001F517"
 
 
 def signal_label(rssi: int | None, connected: bool = False) -> str:

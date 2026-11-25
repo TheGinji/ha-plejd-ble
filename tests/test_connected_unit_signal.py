@@ -26,9 +26,9 @@ from custom_components.plejd_ble.site import PlejdSite
 
 from . import CEILING_1, DIMMER, get_device, get_entity, get_entity_id, setup_entry
 
-GREEN = "\\U0001F7E2"
+GREEN = "\U0001F7E2"
 WHITE = "⚪"
-LINK = "\\U0001F517"
+LINK = "\U0001F517"
 DIMMER_ADDRESS = "A0:B1:C2:00:00:01"
 CEILING_ADDRESS = "A0:B1:C2:00:00:02"
 
