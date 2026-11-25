@@ -66,6 +66,28 @@ Next to each device you see the signal strength that Home Assistant currently re
 
 Your password is stored in Home Assistant. The Plejd cloud is only used to fetch your device list and the Bluetooth keys. When Home Assistant restarts, the integration uses the stored list, as long as it is at most seven days old. If you reload the integration yourself, or tap **Refresh device list**, the list is fetched fresh. Control itself always goes over Bluetooth.
 
+## Supported devices
+
+Plejd BLE goes by what the Plejd cloud says a device is (its output type and abilities), not by its model number. A model that is not in the table can therefore still work, if Plejd reports it as a light, a relay, a button or a motion sensor.
+
+These are the models on the maker's own installation, where the tests on real hardware were done:
+
+| Model | What it is | In Home Assistant |
+| --- | --- | --- |
+| DIM-02-LC2 | 2-channel dimmer LED | `light` |
+| DWN-02, DWN-02-LC | Downlight | `light` |
+| LED-75-H | LED driver 75 W | `light` |
+| CCL-01, OUT-02 | Product name not known to us, so the model number is the name | `light` |
+| REL-01-2P | Relay 16 A, set as a lamp in the Plejd app | `light` |
+| WPH-01-LC | Wireless push button | `event` per button |
+| WMS-01 | Wireless motion sensor | `binary_sensor` and a battery `sensor` |
+
+The product name comes from the first two parts of the model number, so WPH-01-LC is a WPH-01.
+
+Not tested, but expected to work: other dimmers, LED drivers and downlights that Plejd reports as lights (such as DIM-01 and OUT-01), and relays and smart plugs (such as REL-01, REL-02 and SPR-01) that Plejd reports as a relay. Those show up as `switch`. A relay only shows up as a `switch` if its output is set to something other than a light point in the Plejd app. See [Tested on a real installation](#tested-on-a-real-installation).
+
+Not supported: thermostats (TRM-01), blind controllers (JAL-01) and the rotary dial.
+
 ## What you get
 
 | What | In Home Assistant |
@@ -101,7 +123,49 @@ When you control a light or a relay, Home Assistant shows the new state right aw
 
 On/off and brightness are requested by Plejd BLE at every connection. For relays this does not work yet: pyplejd 0.22.1, the version we use, drops the relay's answer, so a relay shows as unknown after a restart until its next state change. The fix is merged in the pyplejd repository, but it is not in 0.22.1. Plejd BLE will use it as soon as a pyplejd release contains it. Plejd only reports color temperature when it changes. That is why Plejd BLE keeps the last known value, even when the light is off. If the color was changed in the Plejd app in the meantime, the value is only correct again after the next change.
 
-Plejd BLE measures signal strength and last-seen time itself, once a minute, for every device on mains power. Home Assistant does not pass on a message that is identical to the previous one, and Plejd devices keep sending the same one, so Plejd BLE asks for the next message every minute. Last seen is therefore accurate to the minute. This is deliberately not the value from pyplejd: that one keeps the strongest value ever seen and so says nothing about now. Battery-powered devices rarely report, so this is not meant for them. The battery level is shown raw, because pyplejd itself is not sure whether the scale is 0 to 255. A sensor rarely reports its battery, so the last value stays until a new one arrives. After the hardware test we will check whether a percentage can be made of it.
+Plejd BLE measures signal strength and last-seen time itself, once a minute, for every device on mains power. Home Assistant does not pass on a message that is identical to the previous one, and Plejd devices keep sending the same one, so Plejd BLE asks for the next message every minute. Last seen is therefore accurate to the minute. This is deliberately not the value from pyplejd: that one keeps the strongest value ever seen and so says nothing about now. Battery-powered devices rarely report, so this is not meant for them. The device you are connected through is an exception too: in our measurements its last seen and signal strength stay at the values from the start of the connection, probably because a device does not advertise while it holds a connection (our assumption). The battery level is shown raw, because pyplejd itself is not sure whether the scale is 0 to 255. A sensor rarely reports its battery, so the last value stays until a new one arrives. After the hardware test we will check whether a percentage can be made of it.
+
+## Use cases
+
+- **Use Plejd panels for more than lights.** Every button on a Plejd panel is an `event` entity. A press can start anything in Home Assistant: lights of another brand, a media player or a script.
+- **One command for a whole room.** Activate a Plejd scene from a dashboard, a voice assistant or an automation. It is one message to the mesh, so the lights follow each other closely.
+- **Let other systems use the motion sensors.** A Plejd motion sensor is a `binary_sensor`. It can also switch heating or ventilation, or send you a message, not only Plejd lights.
+- **Follow what Plejd does by itself.** A scene that a wall switch, the Plejd app or a schedule activates updates the `last_triggered` attribute of the scene. An automation can react to that.
+- **Keep an eye on the mesh.** Get a message when the Bluetooth connection is lost, or turn on the last-seen sensors to notice a device that stopped answering, for example because it was switched off at the fuse box.
+
+## Examples
+
+The entity IDs are examples. Use the ones from your own installation. Another example, for scenes, is under [What you get](#what-you-get).
+
+**A Plejd button controls something else.** A press on button 1 of a panel toggles a light of another brand:
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: event.hallway_panel_button_1
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.attributes.event_type == 'press' }}"
+actions:
+  - action: light.toggle
+    target:
+      entity_id: light.living_room_lamp
+```
+
+**A message when the connection is gone.** Home Assistant shows a notice under Repairs after five minutes without a connection. If you also want a message on your phone, use the connection sensor of the Plejd BLE device and replace `notify.notify` with your own notify action:
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.plejd_ble_bluetooth_mesh_connection
+    to: "off"
+    for: "00:05:00"
+actions:
+  - action: notify.notify
+    data:
+      title: Plejd
+      message: No Bluetooth connection to the Plejd mesh for five minutes.
+```
 
 ## Troubleshooting
 
@@ -145,7 +209,7 @@ Remove passwords, email addresses, addresses and Bluetooth addresses from anythi
 - The integration uses the cloud API that the Plejd app also uses. We do not know whether Plejd officially supports that.
 - Not at the same time as hass-plejd.
 - If the device you are connected through drops out, it takes about a minute before Home Assistant is connected through another device. In our test, pyplejd first tried the device that was no longer reachable, about ten times. During that minute the entities are unavailable. Your Plejd switches keep working.
-- There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors.
+- There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors, except for the device you are connected through.
 - After a restart, a relay (`switch`) shows as unknown until its next state change, see [What you get](#what-you-get).
 - Two commands to the same light right after each other, for example on and off within a few seconds, can lose the second one. The tile then falls back to the real state after 5 seconds.
 - Everything is built on pyplejd, which is maintained by one person. We use one fixed version, and a test checks that it still fits.
@@ -163,6 +227,7 @@ Custom integrations have no official quality score from Home Assistant. This is 
 - The tests run on every change and every week on the newest Home Assistant, and also on the oldest supported version. An extra check on the upcoming beta version warns earlier about changes, but blocks nothing.
 - [Hassfest](https://developers.home-assistant.io/blog/2020/04/16/hassfest/) and the HACS check, without exceptions. Both also run every week.
 - Tests that check that the parts of pyplejd we use do not change.
+- [quality_scale.yaml](custom_components/plejd_ble/quality_scale.yaml): our own assessment against the [Home Assistant Integration Quality Scale](https://www.home-assistant.io/docs/quality_scale/), rule by rule. It is not an official score. Most rules for Bronze, Silver and Gold are met. The open points are that the pyplejd package cannot be traced to its source (up to its maintainer), that new devices only appear after a refresh, and strict typing and sharing Home Assistant's web session (both Platinum).
 - A trial on one real installation, see below.
 
 ### Tested on a real installation
@@ -177,7 +242,7 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 - Simultaneous use with the Plejd app and a GWY-01.
 - More than 30 hours without a single failed keep-alive, also at night.
 - Sudden failure of the device that Home Assistant is connected through (power to the hall light switched off): Home Assistant was back through another device after about a minute, and lights that are not the gateway stayed controllable afterwards.
-- Version 0.2.17: more than two hours connected after a restart, without a failed keep-alive, without an unprocessable message and without a repair notice.
+- Version 0.2.17: more than six days connected through one device, without a failed keep-alive, without an unprocessable message and without a repair notice.
 - The guard against unprocessable messages: an empty message from the mesh, which makes pyplejd fail, was caught on the real installation. Only that one message was lost, and the connection kept working.
 - The signal sensors and last seen.
 
