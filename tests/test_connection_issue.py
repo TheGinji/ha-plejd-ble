@@ -1,4 +1,4 @@
-"""Tests voor de melding in Herstelacties als de verbinding wegblijft."""
+"""Tests voor de melding onder Reparaties als de verbinding wegblijft."""
 
 from __future__ import annotations
 
@@ -49,7 +49,7 @@ def get_issue(hass: HomeAssistant) -> ir.IssueEntry | None:
 async def test_issue_appears_when_the_connection_stays_away(
     hass: HomeAssistant, loaded_entry: MockConfigEntry, mocks: SimpleNamespace
 ) -> None:
-    """Na vijf minuten zonder verbinding staat er een melding in Herstelacties."""
+    """Na vijf minuten zonder verbinding staat er een melding onder Reparaties."""
     lose_connection(loaded_entry.runtime_data, mocks)
 
     await advance(hass, 200)
