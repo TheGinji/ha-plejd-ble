@@ -34,7 +34,7 @@ It is also built to cope with things going wrong, and to show you what happened.
 - **The tile reacts at once.** With hass-plejd a light changes in Home Assistant only when the device reports back, about a second later. Plejd BLE shows the new state right away, and falls back to the last reported state if the device does not confirm within five seconds.
 - **One bad message does not stop it.** A message from the mesh that pyplejd cannot handle is caught. Only that message is lost.
 
-Both integrations reconnect by themselves when the connection drops. Plejd BLE tries again after 10, 30, 60 and 120 seconds, and after that every few minutes. If the device you are connected through drops out, another one takes over after about a minute.
+Both integrations reconnect by themselves when the connection drops. Plejd BLE tries again after 10, 30, 60 and 120 seconds, and after that every few minutes. If the device you are connected through drops out, another one takes over. That took about a second in one of our tests and about a minute in the other (see Limitations).
 
 All of this on our side is covered by automated tests. What we also saw on a real installation is under [Tested on a real installation](#tested-on-a-real-installation).
 
@@ -192,7 +192,7 @@ actions:
 
 **Notice "Plejd cloud is not reachable".** The device list could not be refreshed for more than seven days. The integration keeps working with the stored list, but new or renamed devices only appear once the cloud is reachable again. You can try again with the **Refresh device list** button.
 
-**Notice "No Bluetooth connection to the Plejd mesh".** This appears under Repairs when there has been no connection for five minutes. It disappears by itself as soon as the connection is back. A short interruption does not give a notice, such as the recovery after the device you are connected through drops out, which takes about a minute. If you get the notice, check that the Bluetooth adapter or proxy works and is within range of a Plejd device that runs on mains power.
+**Notice "No Bluetooth connection to the Plejd mesh".** This appears under Repairs when there has been no connection for five minutes. It disappears by itself as soon as the connection is back. A short interruption does not give a notice, such as the recovery after the device you are connected through drops out, which took between a second and about a minute in our tests. If you get the notice, check that the Bluetooth adapter or proxy works and is within range of a Plejd device that runs on mains power.
 
 **Warning "A message from the Plejd mesh could not be processed".** This comes from pyplejd, which cannot handle a message with empty content. Plejd BLE catches it, and only that one message is lost. You see the warning at most once per start. The number and kind of error are in the diagnostics.
 
@@ -225,7 +225,7 @@ Remove passwords, email addresses, addresses and Bluetooth addresses from anythi
 - Bluetooth only. There is no fallback through the Plejd cloud: the cloud is not used to control lights.
 - The integration uses the cloud API that the Plejd app also uses. We do not know whether Plejd officially supports that.
 - Not at the same time as hass-plejd.
-- If the device you are connected through drops out, it takes about a minute before Home Assistant is connected through another device. In our test, pyplejd first tried the device that was no longer reachable, about ten times. During that minute the entities are unavailable. Your Plejd switches keep working.
+- If the device you are connected through drops out, Home Assistant needs a moment to connect through another device. That took about a second in one of our tests and about a minute in the other. The difference is probably the order in which pyplejd tries the devices: the one with the strongest signal it has ever seen first, two tries per device. In the slow test it first tried the device that was no longer reachable, about ten times. In the fast test it did not try that device at all. During that time the entities are unavailable. Your Plejd switches keep working.
 - There is no availability per device. If the connection to the mesh drops, all entities become unavailable at once. You can see who exactly is unreachable from the last-seen sensors. For the device you are connected through, that is the last successful keep-alive, so it can be up to three minutes behind.
 - After a restart, a relay (`switch`) shows as unknown until its next state change, see [What you get](#what-you-get).
 - Two commands to the same light right after each other, for example on and off within a few seconds, can lose the second one. The tile then falls back to the real state after 5 seconds.
@@ -272,9 +272,9 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 - Reloading the integration after ten days with an old device list: the list was fetched fresh from the Plejd cloud, without a notice under Repairs.
 - Simultaneous use with the Plejd app and a GWY-01.
 - More than 30 hours without a single failed keep-alive, also at night.
-- Sudden failure of the device that Home Assistant is connected through (power to the hall light switched off): Home Assistant was back through another device after about a minute, and lights that are not the gateway stayed controllable afterwards.
+- Sudden failure of the device that Home Assistant is connected through, tested twice by cutting the power of the hall light. The first time Home Assistant was back through another device after about a minute, with about ten tries on the failed device first. The second time (version 0.2.19, Home Assistant 2026.11.3, neutral wire pulled from the fitting, debug log kept) Home Assistant noticed the loss at a keep-alive and was connected through the stair cupboard relay again about a second later, without a single try on the failed device and without a notice under Repairs. Lights that are not the gateway stayed controllable afterwards, and the hall light was seen again shortly after its power came back.
 - Version 0.2.17: more than six days connected through one device, without a failed keep-alive, without an unprocessable message and without a repair notice.
-- The guard against unprocessable messages: an empty message from the mesh, which makes pyplejd fail, was caught on the real installation. Only that one message was lost, and the connection kept working.
+- The guard against unprocessable messages: an empty message from the mesh, which makes pyplejd fail, was caught on the real installation, twice. Only that one message was lost, and the connection kept working.
 - The signal sensors and last seen.
 - Version 0.2.19 on Home Assistant 2026.11.3: the options list marks the device you are connected through with 🔗, together with its measurement from the start of the connection. Fifteen minutes later, without a new connection, it showed 🔗 and a dash, while the measurements of the other devices kept changing.
 - A restart of Home Assistant with a stored device list that was eleven hours old: the integration started from the stored list, and the last cloud sync still said eleven hours.
