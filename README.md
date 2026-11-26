@@ -273,6 +273,7 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 - Simultaneous use with the Plejd app and a GWY-01.
 - More than 30 hours without a single failed keep-alive, also at night.
 - Sudden failure of the device that Home Assistant is connected through, tested twice by cutting the power of the hall light. The first time Home Assistant was back through another device after about a minute, with about ten tries on the failed device first. The second time (version 0.2.19, Home Assistant 2026.11.3, neutral wire pulled from the fitting, debug log kept) Home Assistant noticed the loss at a keep-alive and was connected through the stair cupboard relay again about a second later, without a single try on the failed device and without a notice under Repairs. Lights that are not the gateway stayed controllable afterwards, and the hall light was seen again shortly after its power came back.
+- The repair notice for a long connection loss, tested twice (version 0.2.19, Home Assistant 2026.11.3) by cutting the power of the hall light for more than five minutes, with the hall light as the only device allowed as Bluetooth entry point in the options, so there was nothing to connect through. Both times Home Assistant logged its warning after about two minutes and forty-five seconds (two failed keep-alives in a row), and the notice appeared under Repairs exactly 300 seconds after the connection was lost. The second time we looked at the Repairs page in the Dutch interface: the title and text were as intended, as a warning that can be dismissed. About two seconds after the hall light advertised again, after 8 and 6 minutes without power, Home Assistant was connected again and the notice disappeared by itself. No errors in the log. During the outage pyplejd writes two warnings to the log for every round of tries, about 200 lines per hour.
 - Version 0.2.17: more than six days connected through one device, without a failed keep-alive, without an unprocessable message and without a repair notice.
 - The guard against unprocessable messages: an empty message from the mesh, which makes pyplejd fail, was caught on the real installation, twice. Only that one message was lost, and the connection kept working.
 - The signal sensors and last seen.
@@ -281,7 +282,6 @@ The maker's installation: 31 devices, a Raspberry Pi with built-in Bluetooth, Ho
 
 **Not tested yet:**
 - Relay outputs (the `switch` entity) on real hardware. They are covered by automated tests, but the maker has no device that Plejd reports as a relay. His REL-01-2P is set up as a light in the Plejd app, so it appears as a `light`. The relay state after a restart is a known gap, see [What you get](#what-you-get).
-- The repair notice for a long connection loss. We have only seen that it does not appear by mistake at startup.
 - An ESPHome proxy, sudden disconnection of the Bluetooth adapter, the color temperature of lights that support it, and other installations.
 
 ## Support
