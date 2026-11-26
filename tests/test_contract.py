@@ -7,14 +7,20 @@ Deze tests laten meteen zien als een nieuwe versie dat verandert.
 from __future__ import annotations
 
 import inspect
+import sys
 
 from pyplejd import PlejdManager
+from pyplejd.ble import PlejdMesh
 from pyplejd.cloud import PlejdCloudSite
 from pyplejd.cloud.site_details import SiteDetails
 from pyplejd.interface.plejd_light import PlejdLight
 from pyplejd.interface.plejd_relay import PlejdRelay
 from pyplejd.interface.plejd_scene import PlejdScene
 
+from custom_components.plejd_ble.log_filter import (
+    CONNECT_FAILED_PREFIX,
+    PYPLEJD_CONNECTION_LOGGER,
+)
 from custom_components.plejd_ble.site import CachedCloudSite
 
 
@@ -80,3 +86,10 @@ def test_scene_interface_is_unchanged() -> None:
     assert inspect.iscoroutinefunction(PlejdScene.activate)
     assert isinstance(PlejdScene.name, property)
     assert isinstance(PlejdScene.hidden, property)
+
+
+def test_connection_warnings_are_unchanged() -> None:
+    """pyplejd meldt een mislukte verbindingsronde nog zo als ons logfilter verwacht."""
+    module = sys.modules[PlejdMesh.__module__]
+    assert f'getLogger("{PYPLEJD_CONNECTION_LOGGER}")' in inspect.getsource(module)
+    assert f'"{CONNECT_FAILED_PREFIX}' in inspect.getsource(PlejdMesh.connect)
