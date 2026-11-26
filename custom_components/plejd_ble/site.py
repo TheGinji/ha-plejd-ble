@@ -49,6 +49,7 @@ from .const import (
     MANUFACTURER,
     TIME_SYNC_INTERVAL,
 )
+from .log_filter import CONNECT_FAILURE_FILTER
 from .naming import NameSource, build_names
 from .signal_quality import (
     RSSI_SAMPLES,
@@ -66,7 +67,7 @@ type PlejdBleConfigEntry = ConfigEntry[PlejdSite]
 RECONNECT_DELAYS: Final = (10, 30, 60, 120)
 
 # Blijft de verbinding met het mesh zo lang weg (in seconden), dan melden we dat in
-# Herstelacties. Een korte onderbreking, zoals het herstel na uitval van het apparaat
+# Reparaties. Een korte onderbreking, zoals het herstel na uitval van het apparaat
 # waarlangs we verbonden waren, geeft dus geen melding.
 CONNECTION_ISSUE_DELAY: Final = 300
 
@@ -594,6 +595,7 @@ class PlejdSite:
             )
         )
         self.manager.connection_monitor = self._connection_monitor
+        CONNECT_FAILURE_FILTER.add_site(self.entry.entry_id, self._in_known_outage)
         self.started = True
         self._schedule_connection_issue()
 
@@ -607,6 +609,7 @@ class PlejdSite:
     async def async_stop(self) -> None:
         """Stop alles, haal de melding weg en verbreek de Bluetooth-verbinding."""
         self._stopping = True
+        CONNECT_FAILURE_FILTER.remove_site(self.entry.entry_id)
         for unsub in self._unsubs:
             unsub()
         self._unsubs.clear()
@@ -681,6 +684,10 @@ class PlejdSite:
             self.hass, self._async_ping(), "plejd_ble opnieuw verbinden"
         )
 
+    def _in_known_outage(self) -> bool:
+        """Geef aan of we al hebben gemeld dat er geen verbinding met het mesh is."""
+        return self._failed_pings_in_a_row >= 2
+
     async def _async_ping(self, *_: Any) -> None:
         """Verbind met het mesh of houd de verbinding in leven."""
         if self._stopping or not self.started:
@@ -748,7 +755,7 @@ class PlejdSite:
 
     @callback
     def _async_create_connection_issue(self, _now: datetime) -> None:
-        """Meld in Herstelacties dat er al enkele minuten geen verbinding is."""
+        """Meld onder Reparaties dat er al enkele minuten geen verbinding is."""
         self._cancel_connection_issue = None
         if self._stopping or self.manager.connected:
             return
